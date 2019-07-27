@@ -35,7 +35,7 @@ const renderInput = ({ input, label, meta }) => {
         <div className={ className }>
             <label>{ label }</label>
             {/* TODO { ...input } */}
-            <input type='text' autoComplete='off'/>
+            <input type='text' {...input} autoComplete='off'/>
             { renderError(meta) }
         </div>
     );
