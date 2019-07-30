@@ -5,6 +5,10 @@ import StreamForm from './StreamForm';
 
 class StreamCreate extends Component {
 
+    componentDidMount() {
+        console.log('sss')
+    }
+
     onSubmit = (formValues) => this.props.createStream(formValues);
 
     render() { 
