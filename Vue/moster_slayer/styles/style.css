@@ -1,0 +1,36 @@
+button {
+  width: 200px;
+}
+
+button+button {
+  margin-left: 15px;
+}
+
+.log {
+  margin: 8px 0;
+}
+
+.startGame {
+  background-color: #00b1a862;
+  color: #00b1a8;
+}
+
+.yourAttack {
+  background-color: #003de67c;
+  color: blue;
+}
+
+.monsterAttack {
+  background-color: #ff000079;
+  color: red;
+}
+
+.heal {
+  background-color: #00912470;
+  color: #009124;
+}
+
+.gameOver {
+  background-color: #ff001544;
+  color: #ff0015f1;
+}

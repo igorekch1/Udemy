@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Monster Slayer</title>
+  <link rel="stylesheet" href="./styles/style.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <section class="container mb-4">
+      <div class="row">
+        <div class="col text-center">
+          <h2>You</h2>
+          <div style="background-color: green; color: white" :style="{width: myHealth + '%'}">
+            {{myHealth}}
+          </div>
+        </div>
+        <div class="col text-center">
+          <h2>Monster</h2>
+          <div style="background-color: blue; color: white" :style="{width: myHealth + '%'}">
+            {{monsterHealth}}
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="text-center" v-if="!gameStarted">
+      <button id="start" @click="startGame">Start new game</button>
+    </section>
+    <seciton class="d-flex justify-content-center" v-else>
+      <button id="attack" @click="attack">Attack</button>
+      <button id="special-attack" @click="specialAttack">Special attack</button>
+      <button id="heal" @click="heal" :disabled="myHealth == 100">Heal</button>
+      <button id="give-up" @click="giveUp">Give up</button>
+    </seciton>
+    <section class="container">
+      <div class="row justify-content-center log" v-for="log in logs" :class="log.type">
+        <span class="text-uppercase">{{log.name}}</span>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
