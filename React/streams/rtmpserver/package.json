@@ -1,15 +1,15 @@
 {
-  "name": "api",
+  "name": "rtmpserver",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "json-server -p 3003 -w db.json"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "json-server": "^0.15.0"
+    "node-media-server": "^2.1.2"
   }
 }
