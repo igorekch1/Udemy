@@ -5,6 +5,8 @@ import 'ant-design-vue/dist/antd.css';
 
 Vue.use(Antd);
 
+export const eventBus = new Vue();
+
 new Vue({
   el: '#app',
   render: h => h(App)

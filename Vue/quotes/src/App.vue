@@ -18,26 +18,36 @@
         <app-info :message="'Info: Click on a Quote to delete it'"></app-info>
       </a-col>
     </a-row>
+    <a-row>
+      <a-col :span="18">
+        <app-test :text="'SUKA'"></app-test>
+        {{test}}
+      </a-col>
+    </a-row>
   </div>
 </template>
 
 <script>
-import Progress from './components/Progress';
-import QuoteForm from './components/QuoteForm';
-import Quote from './components/Quote';
-import Info from './components/Info';
+import Progress from "./components/Progress";
+import QuoteForm from "./components/QuoteForm";
+import Quote from "./components/Quote";
+import Info from "./components/Info";
+import Test from "./components/Test";
+import { eventBus } from "./main";
 
 export default {
   data() {
     return {
-      quotes: []
-    }
+      quotes: [],
+      test: "ssssssssssssssssss"
+    };
   },
   components: {
-    'app-progress': Progress,
-    'app-quote-form': QuoteForm,
-    'app-quote': Quote,
-    'app-info': Info
+    "app-progress": Progress,
+    "app-quote-form": QuoteForm,
+    "app-quote": Quote,
+    "app-info": Info,
+    "app-test": Test
   },
   methods: {
     addQuote(quote) {
@@ -50,15 +60,18 @@ export default {
     },
     removeQuote(id) {
       const quoteIndex = this.quotes.findIndex((item, index) => index === id);
-      
+
       this.quotes.splice(quoteIndex, 1);
     }
+  },
+  created() {
+    eventBus.$on("valueChange", value => (this.test = value));
   }
-}
+};
 </script>
 
 <style scoped>
-  h2 {
-    color: blue;
-  }
+h2 {
+  color: blue;
+}
 </style>
