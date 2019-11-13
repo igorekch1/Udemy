@@ -1652,3 +1652,318 @@ First - globall mixin is created
 Then - mixin which is passed as array to component
 And after taht - component is created
 Mixin is created first, then goes component creation
+
+## Animations
+
+You can animate with **transition** component.
+Vue provides a transition wrapper component, allowing you to add entering/leaving transitions for any element or component:
+
+- Conditional rendering (using v-if)
+- Conditional display (using v-show)
+- Dynamic components
+- Component root nodes
+
+You can animate only one element with transition, not a list.
+
+Default name of transition - **v-enter**.
+
+_Example:_
+
+```
+ <transition name="fade">
+  <div class="alert alert-info" v-if="show">This is some info</div>
+</transition>
+
+export default {
+  name: "app",
+  data() {
+    return {
+      show: false
+    };
+  }
+};
+
+<style>
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  transition: opacity 1s;
+}
+
+.fade-leave {
+}
+
+.fade-leave-active {
+  transition: opacity 1s;
+  opacity: 0;
+}
+</style>
+```
+
+CSS animations are applied in the same way as CSS transitions, the difference being that v-enter is not removed immediately after the element is inserted, but on an animationend event.
+
+```
+<transition name="bounce">
+    <p v-if="show">Lorem.</p>
+</transition>
+
+.bounce-enter-active {
+  animation: bounce-in .5s;
+}
+.bounce-leave-active {
+  animation: bounce-in .5s reverse;
+}
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+```
+
+You can add **appear** to set initial loading, but no by triggering it.
+
+_You can dynamicly choose an animation with binding the value_
+
+```
+<select v-model="alertAnimation">
+  <option value="fade">Fade</option>
+  <option value="slide">Slide</option>
+</select>
+<transition :name="alertAnimation">
+  <div class="alert alert-info" v-if="show">This is some info</div>
+</transition>
+
+data() {
+  return {
+    alertAnimation: ""
+  };
+}
+```
+
+If you want to use some animated elements with the same animation - you have to add **key** property:
+
+```
+
+<transition :name="alertAnimation">
+  <div class="alert alert-info" v-if="show" key="info">This is some info</div>
+  <div class="alert alert-info" v-else key="warning">This is some info</div>
+</transition>
+```
+
+_To tell vue that we use js animation instead css you should add_ _\*\*:css="false"_
+
+_Example:_
+
+```
+<transition
+  @before-enter="beforeEnter"
+  @enter="enter"
+  @after-enter="afterEnter"
+  @enter-cancelled="enterCancelled"
+  @before-leave="beforeLeave"
+  @leave="leave"
+  @after-leave="afterLeave"
+  @leave-cancelled="leaveCancelled"
+  :css="false"
+>
+  <div style="height: 100px; width: 100px; background: red" v-show="load"></div>
+</transition>
+```
+
+### Multiple animations:
+
+Can be done with **transition-group**
+
+The main differenec with transition:
+
+- transition - is not rendered to the DOM!
+- transition-group - doen render a new HTML tag! By default - span, also u can override it by setting
+
+```
+<transition-group tag="TAG">
+```
+
+## Routing
+
+To use Vue Router:
+
+- include it in main file
+- and add it as a plugin w/ Vue.use
+- create a file with routes w/ array data structure:
+  _[{path: '/', component: Component}]_
+- create an instance of router
+- and pass it in vue instance
+- and include the component in App file
+
+_routes.js_
+
+```
+import User from "./components/user/User";
+import Home from "./components/Home";
+
+export const routes = [{
+    path: '/',
+    component: Home
+  },
+  {
+    path: '/user',
+    component: User
+  }
+];
+
+```
+
+_main.js_
+
+```
+import VueRouter from "vue-router";
+
+Vue.use(VueRouter);
+
+const router = new VueRouter({
+  routes
+});
+
+new Vue({
+  el: '#app',
+  router,
+  render: h => h(App)
+});
+
+```
+
+_App.vue_
+
+```
+<router-view></router-view>
+```
+
+**By default vue router uses hash mode**
+So if you want to use another mode you should pass it in VueRouter instance:
+
+```
+const router = new VueRouter({
+  routes,
+  mode: 'history'
+});
+```
+
+### Using Links
+
+You can use links w/ router component - <router-link> whick accepts _to_ params where you should pass th pathh
+_Example:_
+
+```
+<router-link to="/">
+  Home
+</router-link>
+```
+
+In html it's displayed as a normal anchor tag with href and path in it.
+
+You can put you link in any tag you want providing it with _tag_ attribute:
+
+```
+<router-link to="/" tag="li">
+  <a class="nav-link active">
+    Home
+  </a>
+</router-link>
+```
+
+You can access router with this to push an object/path history
+
+```
+navigateToHome() {
+  this.$router.push("/");
+  //   this.$router.push({path: '/'});
+}
+```
+
+To pass a dynamic params you should add :data to your route
+
+```
+export const routes = [
+  {
+    path: '/user/:id',
+    component: User
+  }
+];
+```
+
+And access the param you are passing in component :
+
+```
+data() {
+  return {
+    id: this.$route.params.id
+  };
+},
+```
+
+But if you add same routes with different ids paramd.id won't change cause VUe saves it and doesn't reacreated is, so you need to watch it:
+
+```
+watch: {
+  $route(to, from) {
+    console.log(to, from);
+    this.id = to.params.id;
+  }
+},
+```
+
+We are watch route property and navigating to route which is passed in "to" param.
+
+**In vue-router 2.2 you canbind the route params to props of the component**
+
+_component.js_
+
+```
+export default {
+  props: ['name']
+}
+```
+
+_link_
+
+```
+<router-link to="hello/you">To component</router-link>
+```
+
+_route_
+
+```
+{path: '/hello/:name', component: Component, props: true}
+```
+
+### Nested routes
+
+To create a nested routes you have to pass children to main route component:
+
+```
+{
+    path: '/user',
+    component: User,
+    children: [{
+      path: '',
+      component: UserStart // if you put / - it will attach to your domain
+    }, {
+      path: ':id',
+      component: UserDetail
+    }, {
+      path: ':id/edit',
+      component: UserEdit
+    }],
+    props: true
+  }
+```
+
+And then include <router-view></router-view> in this component!
