@@ -1967,3 +1967,137 @@ To create a nested routes you have to pass children to main route component:
 ```
 
 And then include <router-view></router-view> in this component!
+
+### Named routes
+
+To pass an id to navigate for example to "user/3/edit" you can acces it from \$router object:
+
+```
+<router-link
+  tag="button"
+  :to="'user' + $route.params.id + '/edit'"
+  class="btn btn-primary"
+  >Edit the User</router-link
+>
+```
+
+_Also, you can pass an object there if you define a name of component in your route:_
+
+```
+{
+  path: ':id/edit',
+  component: UserEdit,
+  name: 'userEdit'
+}
+
+<router-link
+  tag="button"
+  :to="{name: 'userEdit',params:{id: $route.params.id}}"
+  class="btn btn-primary"
+>Edit the User</router-link>
+```
+
+### Query params
+
+To pass query params just add query object with key=value params:
+
+```
+<router-link
+  tag="button"
+  :to="{ name: 'userEdit', params: { id: $route.params.id },
+  query: { locale: 'en', q: 100 }}"
+  class="btn btn-primary"
+>Edit the User</router-link>
+```
+
+Or in history object:
+
+```
+this.$router.push({
+  name: "home",
+  query: { locale: 'en', q: 100 }
+});
+```
+
+You can extrat them via \$route.query:
+
+```
+<p>Locale: {{ $route.query.locale }}</p>
+<p>Analytics: {{ $route.query.q }}</p>
+```
+
+## Named router views
+
+You can name the router view and then include it into components object in your routes.
+
+```
+<router-view name="header-top"></router-view>
+<router-view></router-view>
+<router-view name="header-bottom"></router-view>
+
+routes = [{
+    path: '/',
+    name: "home",
+    components: {
+      default: Home,
+      'header-top': Header
+    }
+  },
+  {
+    path: '/user',
+    components: {
+      default: User,
+      'header-top': Header
+    }
+  }]
+```
+
+## Redirect
+
+Simply add redirect prop in the route:
+
+```
+{ path: 'redirect-me', redirect: '/user' }
+{ path: 'redirect-me', redirect: { name: 'home' } }
+```
+
+## Catch all routes that are not suitable:
+
+Implementes with \* wildcard character.
+
+```
+{ path: '*', redirect: '/' }
+```
+
+_You can add animation by wrapping router-view in transition component_
+
+## Control the scroll behavior
+
+- add hash to router-link
+- add scrollBehavior method to router instance
+- and create al element with a selector you are pssing to hash
+
+```
+const router = new VueRouter({
+  routes,
+  mode: 'history',
+  scrollBehavior(to, from, savePosition) {
+    if (to.hash) {
+      return {
+        selector: to.hash
+      }
+    }
+
+    return {
+      x: 0,
+      y: 700
+    };
+  }
+});
+
+:to="{ name: 'userEdit', params: { id: $route.params.id },
+query: { locale: 'en', q: 100 }, hash: '#data'}"
+
+
+<p id="data">Some xtra data</p>
+```

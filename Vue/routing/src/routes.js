@@ -3,14 +3,22 @@ import UserStart from "./components/user/UserStart";
 import UserEdit from "./components/user/UserEdit";
 import UserDetail from "./components/user/UserDetail";
 import Home from "./components/Home";
+import Header from "./components/Header"
 
 export const routes = [{
     path: '/',
-    component: Home
+    name: "home",
+    components: {
+      default: Home,
+      'header-top': Header
+    }
   },
   {
     path: '/user',
-    component: User,
+    components: {
+      default: User,
+      'header-top': Header
+    },
     children: [{
       path: '',
       component: UserStart // if you put / - it will attach to your domain
@@ -19,8 +27,17 @@ export const routes = [{
       component: UserDetail
     }, {
       path: ':id/edit',
-      component: UserEdit
+      component: UserEdit,
+      name: 'userEdit'
     }],
     props: true
+  },
+  {
+    path: 'redirect-me',
+    redirect: '/user'
+  },
+  {
+    path: '*',
+    redirect: '/'
   }
 ];
