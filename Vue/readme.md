@@ -2101,3 +2101,74 @@ query: { locale: 'en', q: 100 }, hash: '#data'}"
 
 <p id="data">Some xtra data</p>
 ```
+
+## Routing guard
+
+- You can setup the permission on vue router instance in _beforeEach method_
+
+Params:
+function w/ to, fro and next params. next - continue journey. You can pass false to abot, object or pass in next func.
+
+```
+router.beforeEach((to, from, next) => {
+  // some logic here
+  next();
+});
+
+```
+
+- Also, you can do the same in the route setup w/ function _beforeEnter:_
+
+```
+{
+  path: ':id',
+  component: UserDetail,
+  beforeEnter: (to, from, next) => {
+  // some logic here
+  next();
+}
+```
+
+- Moreover, you can check the access in routing lifecycle hook called _beforeRouteEnter:_
+
+```
+beforeRouteEnter(to, from, next) {
+  // some logic here
+  // if you need to acces the vm data -
+  // pass a callback to next function
+  // next(vm => vm.link);
+  if (true) {
+    next();
+  } else {
+    next(false);
+  }
+}
+```
+
+You can not access the vm instance cause it's not craeted yet.
+
+### BeforeLeave guard
+
+You can use beforeRouteLeave lifecycle hook to setup some logic before you leave from this route. Here you can access the data cause the component has already been created.
+
+```
+beforeRouteLeave(to, from, next) {
+    if (this.confirmed) {
+      next();
+    }
+  }
+```
+
+## Lazy loading
+
+As webpack loades files immediately, you can setup a lazy loading which is executed asynchronously w/ webpack:
+
+```
+const User = resolve => {
+  require.ensure(['./components/user/User'], () => {
+    resolve(require('./components/user/User'));
+  });
+};
+```
+
+It will be loaded whenever you need it. That means that the bundle of the file will be loaded when you reach the route for example and it won't be included in main bundle.
