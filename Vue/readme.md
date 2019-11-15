@@ -2172,3 +2172,93 @@ const User = resolve => {
 ```
 
 It will be loaded whenever you need it. That means that the bundle of the file will be loaded when you reach the route for example and it won't be included in main bundle.
+
+## Vuex
+
+install vuex: npm i vuex
+
+**Configure a store file**
+W/ Vuex.store(_store_)
+
+```
+import Vue from "vue";
+import Vuex from "vuex";
+
+Vue.use(Vuex);
+
+export const store = new Vuex.Store({
+  state: {
+    counter: 0
+  }
+});
+```
+
+Register it in main Vue instance:
+
+```
+import { store } from "./store/store";
+
+new Vue({
+  el: "#app",
+  store,
+  render: h => h(App)
+});
+```
+
+To access store use _this.\$store.state_
+
+```
+this.$store.state.counter--;
+```
+
+_The main problem in such approach is that we duplicate our code if we need such logic in multiple components!_
+
+The solution is not directly access the store, but use **getters and setters**.
+
+### Using getter
+
+Getters is a property in store config:
+
+```
+export const store = new Vuex.Store({
+  state: {
+    counter: 0
+  },
+  getters: {
+    doubleCounter: state => {
+      return state.counter * 2;
+    }
+  }
+});
+```
+
+You can access it w/ _this.$state.getters$_:
+
+```
+this.$store.getters.doubleCounter;
+```
+
+_Note: to not created a lot computed properties you can use _ **mapGetters** _ from vuex which will do it automatically._
+
+```
+import { mapGetters } from "vuex";
+
+computed: mapGetters(["doubleCounter", "stringCounter"])
+```
+
+_Also, you can pass an object in mapGetters to map getter to different names:_
+
+```
+mapGetters({
+propertyName: 'doubleCounter'
+})
+```
+
+The downside is that you cannot create your own computed property. So, the solution is to use spread operator for mapGetters in computed prop:
+
+```
+computed: {
+  myComputedProperty() {},
+  ...mapGetters(["doubleCounter", "stringCounter"])
+}
+```
