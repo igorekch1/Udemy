@@ -6,6 +6,10 @@
         <hr />
       </div>
       <div class="col-12">
+        <app-another-counter></app-another-counter>
+        <hr />
+      </div>
+      <div class="col-12">
         <app-result></app-result>
       </div>
       <div class="col-12">
@@ -18,6 +22,7 @@
 <script>
 import Counter from "./components/Counter";
 import Result from "./components/Result";
+import AnotherCounter from "./components/AnotherCounter";
 import AnotherResult from "./components/AnotherResult";
 
 export default {
@@ -25,6 +30,7 @@ export default {
   components: {
     "app-counter": Counter,
     "app-result": Result,
+    "app-another-counter": AnotherCounter,
     "app-another-result": AnotherResult
   }
 };
