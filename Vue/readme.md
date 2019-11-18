@@ -2262,3 +2262,43 @@ computed: {
   ...mapGetters(["doubleCounter", "stringCounter"])
 }
 ```
+
+### Using Nampespace to avoid naming problems
+
+- Create a type.js file where u will store all getters/mutations/actions as constants:
+  _Structure:_ [module_name]/[func_name]
+
+```
+export const DOUBLE_COUNTER = "counter/DOUBLE_COUNTER";
+export const CLICK_COUNTER = "counter/CLICK_COUNTER";
+```
+
+Using as getters methods:
+
+```
+import * as types from "../types";
+
+const getters = {
+  [types.DOUBLE_COUNTER]: state => {
+    return state.counter * 2;
+  },
+  [types.CLICK_COUNTER]: state => {
+    return state.counter + " Click";
+  }
+};
+```
+
+Get access to getters:
+
+```
+import * as types from "../store/types";
+
+export default {
+  computed: {
+    ...mapGetters({
+      doubleCounter: types.DOUBLE_COUNTER,
+      stringCounter: types.CLICK_COUNTER
+    })
+  }
+};
+```
