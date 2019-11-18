@@ -5,11 +5,15 @@
 </template>
 
 <script>
+import * as types from "../store/types";
+import { mapGetters } from "vuex";
+
 export default {
   computed: {
-    counter() {
-      return this.$store.state.counter.counter;
-    }
+    myComputedProperty() {},
+    ...mapGetters({
+      counter: types.CLICK_COUNTER
+    })
   }
 };
 </script>
