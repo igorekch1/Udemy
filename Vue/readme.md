@@ -2302,3 +2302,189 @@ export default {
   }
 };
 ```
+
+## Mutations
+
+Mutations allow you to mutate some properties in state
+
+```
+export const store = new Vuex.Store({
+  state: {
+    counter: 0
+  },
+  mutations: {
+    increment: state => {
+      state.counter++;
+    },
+    decrement: state => {
+      state.counter++;
+    }
+  }
+});
+```
+
+To use it in a component you have to invoke it with commit function:
+
+```
+export default {
+  methods: {
+    increment() {
+      this.$store.commit("increment");
+    },
+    decrement() {
+      this.$store.commit("decrement");
+    }
+  }
+};
+```
+
+\*Also, to decrease amount of code you can use **mapMutations:**
+
+```
+methods: {
+  ...mapMutations(["increment", "decrement"])
+}
+```
+
+It will automatically change the to functions which deispatches an action.
+
+The issue of mutations is that they have to be **SYNCHRONOUS**.
+
+## Actions
+
+Actions - function where you can run async code in order to direct commit a mutation, but dispatch an action.
+
+Actions function accept a context as a param.
+
+```
+export const store = new Vuex.Store({
+  state: {
+    counter: 0
+  },
+  mutations: {
+    increment: state => {
+      state.counter++;
+    },
+    decrement: state => {
+      state.counter++;
+    }
+  },
+  actions: {
+    asyncIncrement: ({
+      commit
+    }) => {
+      setTimeout(() => {
+        commit("increment")
+      }, 1000);
+    },
+    asyncDecrement: ({
+      commit
+    }) => {
+      setTimeout(() => {
+        commit("decrement")
+      }, 1000);
+    }
+  }
+});
+
+```
+
+_MapActions to methods:_
+
+```
+methods: {
+  ...mapMutations(["increment", "decrement"]),
+  increment() {
+    this.$store.dispatch("increment", 2);
+  },
+  decrement() {
+    this.$store.dispatch("decrement", 2);
+  }
+}
+```
+
+_actions_:
+
+```
+actions: {
+increment: ({
+  commit
+}, payload) => {
+  commit("increment", payload);
+},
+decrement: ({
+  commit
+}, payload) => {
+  commit("decrement", payload);
+},
+```
+
+_mutations:_
+
+```
+mutations: {
+  increment: (state, payload) => {
+    state.counter += payload;
+  },
+  decrement: (state, payload) => {
+    state.counter -= payload;
+  }
+},
+```
+
+_Note:_
+_You can not use v-model w/ vuex cause regular computed property are getters, but not setter!_
+
+Instead you can use :value w/ computed property that return the value from store and @input w/ method that mutate the store.
+
+Also, u can set a getter and setter in computed property:
+
+```
+computed: {
+  value: {
+    get() {
+      return this.$store.getters.value;
+    },
+    set(val) {
+         this.$store.dispatch('updateValue', value);
+    }
+  }
+}
+```
+
+### Using modules
+
+To separate files you can create a module with number of actions, getters, state and include in main store file:
+
+store.js
+
+```
+import counter from "./modules/counter";
+
+export const store = new Vuex.Store({
+  modules: {
+    counter
+  }
+});
+```
+
+modules/counter.js
+
+```
+const state = {};
+
+const getters = {}
+
+const mutations = {}
+
+const actions = {}
+
+export default {
+  state,
+  mutations,
+  actions,
+  getters
+}
+```
+
+_Also, you can separate files for actions, mutations, state, getters to separate files, but not modules_
