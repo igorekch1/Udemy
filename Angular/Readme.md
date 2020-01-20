@@ -144,6 +144,73 @@ Combines both event and property binding:
 <input type="text" class="form-control" [(ngModel)]="someField" />
 ```
 
+### Property binding
+
+#### From parent to Child
+
+To pass prop to child component you have to bind it on component you want to pass it to:
+
+```
+app-server-element
+    *ngFor="let serverElement of serverElements"
+    [element]="serverElement"
+></app-server-element>
+```
+
+And in child component you have to add _Input_ decorator to this prop:
+
+```
+  @Input() element: { type: string; name: string; content: string };
+
+```
+
+#### Assinging an Alias
+
+```
+[srvElement]="serverElement"
+
+
+@Input("srvElement") element: { type: string; name: string; content: string };
+```
+
+#### From Child to Parent
+
+Using EventEmitter:
+
+1. Bind custom event on child component:
+
+```
+<app-cockpit
+    (serverCreated)="onServerAdded($event)"
+></app-cockpit>
+```
+
+2. In child component declare this event:
+
+```
+@Output() serverCreated = new EventEmitter<{
+    serverName: string;
+    serverContent: string;
+  }>(); // call a constructor
+```
+
+3. Emit an event from child component:
+
+```
+this.serverCreated.emit({
+  serverName: this.newServerName,
+  serverContent: this.newServerContent
+});
+```
+
+4. Handle it in parent component:
+
+```
+onServerAdded(serverData: { serverName: string; serverContent: string }) {
+    // do some stuff
+  }
+```
+
 ## Directives
 
 Directvies - Instruction in the DOM (like components). We are extracting template and logic and put them in specific place.
@@ -173,6 +240,12 @@ Directvies - Instruction in the DOM (like components). We are extracting templat
 ```
 
 -\*ngFor="let item of items; let i = index"
+
+## Debugging
+
+You can debug your App by going to Source tab in developer tools, finding the row in the bundle which look similar to your ts code and click on it. Yout ts file will be opened and u can user debugger there.
+
+But, it's better to use specific tools for it: **Angular Augury**.
 
 ## Services & Dependency Injection
 
