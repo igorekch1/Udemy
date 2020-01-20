@@ -1,0 +1,10 @@
+<p
+  [ngStyle]="{ backgroundColor: getColor() }"
+  [ngClass]="{ online: status === 'online' }"
+>
+  Server w/ ID: {{ serverId }} is {{ getStatus() }}
+</p>
+<button type="button button-primary" (click)="serverId = serverId + 1">
+  Add
+</button>
+<p>{{ serverId }}</p>
