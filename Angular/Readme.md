@@ -100,6 +100,27 @@ Also, you can provide inline CSS using styles instead of styleUrls. It will have
 })
 ```
 
+### Children
+
+To pass children to component u can use special directive - _ng-content_:
+
+```
+<app-server-element
+      >
+    <p>Children</p>
+</app-server-element>
+```
+
+server-element.component.ts:
+
+```
+<div>
+    <ng-content></ng-content> // <p>Children</p>
+</div>
+
+
+```
+
 ## DataBinding
 
 ```
@@ -210,6 +231,144 @@ onServerAdded(serverData: { serverName: string; serverContent: string }) {
     // do some stuff
   }
 ```
+
+#### Assinging an Alias
+
+Pass named event to child component and listen to it providing the same name to Output decorator parameter.
+
+```
+<app-cockpit
+    (bpCreated)="onBluePrintAdded($event)"
+></app-cockpit>
+
+@Output("bpCreated") bluePrintCreated = new EventEmitter<{}>();
+```
+
+### Styles
+
+Angular encapsulating css files and they are applied only for that component which css file belongs to.
+Angular adds the same attribute to all DOM elements of the component, so that's why styles provided in component.css applies only to this component. It emulates Shadow DOM in such way cause old browsers do not support Shadow DOM.
+
+To turn of style encapsulation you have to provide _encapsulation field_ and set it to ViewEncapsulation.None. Styles of this component will global.
+
+```
+@Component({
+  encapsulation: ViewEncapsulation.None // Native, Emulated (default)
+})
+```
+
+### Local Reference
+
+U can privide reference with #name and use it only in template where it was defined.
+
+```
+    <input type="text" class="form-control" #serverNameInput />
+    <button class="btn btn-primary" (click)="onAddServer(serverNameInput)">Add Server</button>
+```
+
+The ref is DOM element, so if u want to extract a value you can access it on the ref.value:
+
+```
+onAddServer(nameInput: HTMLInputElement) {
+    this.serverCreated.emit({
+      serverName: nameInput.value
+    });
+  }
+```
+
+### Getting access to template
+
+Alternativly to local references, u can use @ViewChild decorator, instead.
+@ViewChild('selector', {static : bool}). static param will be removed in Angular 9.
+
+```
+<input type="text" class="form-control" #serverContent />
+```
+
+.ts:
+
+```
+@ViewChild("serverContent", { static: true }) serverContentInput: ElementRef;
+```
+
+Type - ElementRef. Access to value:
+
+```
+this.serverContentInput.nativeElement.value
+```
+
+Also, u can set ref on the Component:
+
+```
+<color-sample
+  #primaryColorSample
+</color-sample>
+
+@ViewChild('primaryColorSample')
+  sample: ColorSampleComponent;
+```
+
+If u want to write component initialization code that uses the references injected by @ViewChild, u need to do it inside the AfterViewInit lifecycle hook:
+
+```
+@ViewChild(ColorSampleComponent)
+  primarySampleComponent: ColorSampleComponent;
+
+  ngAfterViewInit() {
+    console.log("primaryColorSample:", this.primarySampleComponent);
+  }
+```
+
+### Children
+
+To pass children to a component u can use specific directive _ng-model_
+
+```
+<app-server-element>
+   <p>Children</p>
+</app-server-element>
+```
+
+server-element.component.ts
+
+```
+<div>
+    <ng-content></ng-content> // <p>Children</p>
+</div>
+```
+
+#### Get access to ng-content
+
+You can set a ref on childrens' element in root component and get acces to it in Child component via ContentChild.
+@ContentChild("contentParagraph", { static: true }) paragraph: ElementRef;
+If you DON'T use the selected element in ngOnInit, set static: false instead.
+
+### Component Lifecycle
+
+0. Constructor
+
+1. ngOnChanges() - Called before ngOnInit() and whenever one or more data-bound input properties change. The method receives a SimpleChanges object of current and previous property values.
+
+1. ngOnInit() - Initialize the directive/component after Angular first displays the data-bound properties and sets the directive/component's input properties.
+   Called once when component is initialized, runs after the ngOnChanges().
+
+1. ngDoCheck() - Called during every change detection run, immediately after ngOnChanges() and ngOnInit().
+   Called during every change detection run, immediately after ngOnChanges() and ngOnInit().
+
+1. ngAfterContentInit() - Called after content (ng-content) has been projected into view.
+   Called once after the first ngDoCheck().
+
+1. ngAfterContentChecked() - Called every time the projected content has been checked.
+   Called after the ngAfterContentInit() and every subsequent ngDoCheck().
+
+1. ngAfterViewInit() - Called after the component's view (and child views) has been initialized.
+   Called once after the first ngAfterContentChecked().
+
+1. ngAfterViewChecked() - Called every time th view (and child views) had been checked.
+   Called after the ngAfterViewInit() and every subsequent ngAfterContentChecked().
+
+1. ngOnDestroy() - Called once the component is about to be destroyed.
+   Unsubscribe Observables and detach event handlers to avoid memory leaks.
 
 ## Directives
 
