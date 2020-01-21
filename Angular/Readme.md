@@ -374,6 +374,26 @@ If you DON'T use the selected element in ngOnInit, set static: false instead.
 
 Directvies - Instruction in the DOM (like components). We are extracting template and logic and put them in specific place.
 
+Directives are divided into attribute and structural directives.
+
+- Attribute directive - sits on elements like attributes(changes colors/bgs, etc.).
+- Structural directive - changes the structure of the dom/area around it(destroy from the DOM, etc.).
+  Stuctural directive are assigned with \* to know that they should be transformed.
+
+For example:
+
+```
+<div *ngIf="condition"></div>
+```
+
+_is transformed into:_
+
+```
+<ng-template [ngIf]="condition">
+	<div></div>
+</ng-template>
+```
+
 - \*ngIf="" - doesn't place in DOM if not true
 
 ```
@@ -399,6 +419,171 @@ Directvies - Instruction in the DOM (like components). We are extracting templat
 ```
 
 -\*ngFor="let item of items; let i = index"
+
+```
+<li
+    *ngFor="let value of array"
+>
+    {{ value }}
+</li>
+```
+
+-ngSwitch
+
+```
+<div [ngSwitch]="conditionExpression">
+    <div *ngSwitchCase="expression">output</div>
+    <div *ngSwitchDefault>output2</div>
+</div>
+```
+
+### Creating own directives
+
+Creating custom directive is preovided with _Directive_ docorator, which accepts a selector name.
+Then u have to initialize it in the constructor and u can access it in ngOnInit hook:
+
+#### Attribute directive
+
+```
+import { Directive, ElementRef, OnInit } from "@angular/core";
+
+@Directive({
+  selector: "[appBasicHighlight]"
+})
+export class BasicHighlightDirective implements OnInit {
+  constructor(private elementRef: ElementRef) {}
+
+  ngOnInit() {
+    this.elementRef.nativeElement.style.backgroundColor = "green";
+  }
+}
+
+```
+
+Also, do not forget to register it in module:
+
+```
+declarations: [
+    AppComponent,
+    // directives
+    BasicHighlightDirective
+  ],
+```
+
+Better practice is not to change element directly, because in some circumstances u'll get some errors, but use _renderer_:
+
+```
+constructor(private elRef: ElementRef, private renderer: Renderer2) {}
+
+ngOnInit() {
+    this.renderer.setStyle(
+      this.elRef.nativeElement,
+      "background-color",
+      "orange"
+    );
+}
+```
+
+Also, u can listen for events and provide specific handler. This can be arranged w/ _HostListener_ decorator:
+HostListener(eventName, args) - Decorator that declares a DOM event to listen for, and provides a handler method to run when that event occurs.
+
+```
+@HostListener("mouseenter") mouseover(eventData: Event) {
+    this.renderer.setStyle(
+      this.elRef.nativeElement,
+      "background-color",
+      "blue"
+    );
+  }
+```
+
+Even better approach is _HostBinding_ decorator.
+It's decorator that marks a DOM property as a host-binding property and supplies configuration metadata. Angular automatically checks host property bindings during change detection, and if a binding changes it updates the host element of the directive.
+
+```
+export class BetterHighlightDirective implements OnInit {
+  @HostBinding("style.backgroundColor") backgroundColor: string = "blue";
+
+  constructor(private elRef: ElementRef, private renderer: Renderer2) {}
+
+  ngOnInit() {}
+
+  @HostListener("mouseenter") mouseover(eventData: Event) {
+    this.backgroundColor = "red";
+  }
+
+  @HostListener("mouseleave") mouseleave(eventData: Event) {
+    this.backgroundColor = "orange";
+  }
+}
+```
+
+U could, also, pass attributes to custom directive:
+
+```
+<p appBetterHighlight [defaultColor]="'yellow'" [highlightColor]="'red'">
+    Style me with better directive!
+</p>
+```
+
+```
+export class BetterHighlightDirective implements OnInit {
+  @Input() defaultColor: string = "transparent";
+  @Input() highlightColor: string = "blue";
+  @HostBinding("style.backgroundColor") backgroundColor: string;
+
+  constructor(private elRef: ElementRef, private renderer: Renderer2) {}
+
+  ngOnInit() {
+    this.backgroundColor = this.defaultColor;
+  }
+
+  @HostListener("mouseenter") mouseover(eventData: Event) {
+    this.backgroundColor = this.highlightColor;
+  }
+
+  @HostListener("mouseleave") mouseleave(eventData: Event) {
+    this.backgroundColor = this.defaultColor;
+  }
+}
+```
+
+Remove quotation marks:
+
+```
+<p appBetterHighlight defaultColor="yellow" highlightColor="red">
+    Style me with better directive!
+</p>
+```
+
+#### Creating structural directive
+
+```
+@Directive({
+  selector: "[appUnless]"
+})
+export class UnlessDirective {
+  @Input() set appUnless(condition: boolean) {
+    if (!condition) {
+      this.vcRef.createEmbeddedView(this.templateRef);
+    } else {
+      this.vcRef.clear();
+    }
+  }
+
+  constructor(
+    private templateRef: TemplateRef<any>,
+    private vcRef: ViewContainerRef
+  ) {}
+}
+```
+
+Setter should be the same as directive on th element:
+
+```
+<div *appUnless="!condition">
+</div>
+```
 
 ## Debugging
 
