@@ -591,11 +591,202 @@ You can debug your App by going to Source tab in developer tools, finding the ro
 
 But, it's better to use specific tools for it: **Angular Augury**.
 
-## Services & Dependency Injection
+## Services & Dependency Injection (_Core feature of Angular_)
 
-_Core feature of Angular_
+Service is just normal class.
+Dependency Injector - injects an instance of the class to out component automatically.
+To require such instance add it to constructor and provide a type(required). And add it to providers of the component.
+
+service.ts:
+
+```
+export class LogginService {
+  logStatusChange(status: string) {
+    console.log("A server status changed, new status: " + status);
+  }
+}
+
+```
+
+usage:
+
+```
+@Component({
+  selector: "app-new-account",
+  providers: [LoggingService]
+})
+
+constructor(private loggingService: LogginService){}
+```
+
+Ijectors are hierarchical, so if you provide service in parent component, the children will have accecss to this service as well. This service is passed down, but not up.
+If you provide a service in the Module, the instance of the service will be available though out the whole module.
+
+So, u can remove service from providers array of child components, but leave it in the constructor to let the component know that u will use it.
+
+_To inject service into another serive u have to register it on more global level(module)._
+_And provide Injectable decorator to the service u inject in:_
+
+```
+import { LoggingService } from "./logging.service";
+import { Injectable } from "@angular/core";
+
+@Injectable()
+export class AccountsService {
+  accounts = [];
+
+  constructor(private loggingService: LoggingService) {}
+
+  updateStatus(id: number, newStatus: string) {
+    this.accounts[id].status = newStatus;
+    this.loggingService.logStatusChange(newStatus);
+  }
+}
+
+```
+
+Beginning with Angular 6.0, the preferred way to create a singleton service is to set providedIn to root on the service's @Injectable() decorator. This tells Angular to provide the service in the application root.
+
+```
+@Injectable({providedIn: 'root'})
+export class MyService { ... }
+
+```
 
 ## Routing
+
+First of all, u have to import ROutes and RouterModule from @angular/router and create routes array.
+
+```
+import { Routes, RouterModule } from "@angular/router";
+
+const appRoutes: Routes = [
+  {
+    path: "",
+    component: HomeComponent
+  },
+  {
+    path: "users",
+    component: UsersComponent
+  },
+  {
+    path: "servers",
+    component: ServersComponent
+  }
+];
+```
+
+Register it in imports of the module:
+
+```
+@NgModule({
+  imports: [RouterModule.forRoot(appRoutes)],
+  providers: [ServersService],
+  bootstrap: [AppComponent]
+})
+```
+
+Router Link :
+
+```
+<a routerLink="/users">Users</a>
+```
+
+or
+
+```
+<a [routerLink]="['/users']">Users</a>
+```
+
+/users - absolute path
+users - relative path
+
+#### Specify active link
+
+The RouterLinkActive directive toggles css classes for active RouterLink bindings based on the current RouterState.
+
+```
+<li routerLinkActove="active" [routerLinkActiveOptions]="{exact: true}">
+  <a routerLink="/users">Users</a>
+</li>
+```
+
+[routerLinkActiveOptions]="{exact: true}" - if only the whole path is the same
+
+#### Navigate programmatically:
+
+Firstly, u have to inject router:
+
+```
+constructor(private router: Router) {}
+
+```
+
+And user navigate on route instance, which accepts array of routes as a param:
+
+```
+this.router.navigate(["servers"]);
+```
+
+If u're navigating to route w/ relative path like
+
+```
+this.router.navigate(['servers'])
+```
+
+Nothing will happen cause router doesn't know on which route u're now, but routerLink does.
+So, to tell on whick route u are u have to pass 2nd param - relativeTo and inject the active route.
+
+```
+constructor(private route: ActivatedRoute) {}
+
+this.router.navigate(["servers"], { relativeTo: this.route });
+```
+
+#### Fetching route params
+
+Dynamicallu loaded component:
+
+```
+{
+    path: "users/:id/:name",
+    component: UserComponent
+},
+```
+
+So, in User Component u can access the params from active route:
+
+```
+export class UserComponent implements OnInit {
+  user: { id: number; name: string };
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    this.user = {
+      id: this.route.snapshot.params["id"],
+      name: this.route.snapshot.params["name"]
+    };
+  }
+}
+
+```
+
+But, the issue is that if params change, angular won't know about it cause component has already been initialized.
+So, u have to watch these params. Params are observable and u can subscribe to them:
+
+```
+ ngOnInit() {
+    this.user = {
+      id: this.route.snapshot.params["id"],
+      name: this.route.snapshot.params["name"]
+    };
+    this.route.params.subscribe((params: Params) => {
+      this.user.id = params["id"];
+      this.user.name = params["name"];
+    });
+  }
+```
 
 ## Observables
 
