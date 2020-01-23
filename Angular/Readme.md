@@ -781,11 +781,338 @@ So, u have to watch these params. Params are observable and u can subscribe to t
       id: this.route.snapshot.params["id"],
       name: this.route.snapshot.params["name"]
     };
-    this.route.params.subscribe((params: Params) => {
+    this.paramsSubsribtion = this.route.params.subscribe((params: Params) => {
       this.user.id = params["id"];
       this.user.name = params["name"];
     });
   }
+```
+
+The subscribtion are cleaned by Angular automatically, but it's good to do cause u can provide your own observables.
+So, it's better to unsubscribe:
+
+```
+ngOnDestroy() {
+    this.paramsSubsribtion.unsubscribe();
+}
+```
+
+#### Querying params and fragment
+
+**Passing params**
+queryparams - ?
+fragment - #
+/servers/5/edit?allowEdit=1
+
+```
+<a
+    [routerLink]="['/servers', 5, 'edit']"
+    [queryParams]="{ allowEdit: '1' }"
+    fragment="loading"
+    class="list-group-item"
+    *ngFor="let server of servers"
+>
+    {{ server.name }}
+</a>
+```
+
+Programmatically:
+
+```
+onLoadServers(id: number) {
+    this.router.navigate(["servers", id, "edit"], {
+      queryParams: { allowEdit: "1" },
+      fragment: "loading"
+    });
+}
+```
+
+**Retrieving**
+
+1. U can access the snapshot of the route(this.route.snapshot.queryParams/fragment). But it won't be reactive, the same with params
+2. U can access subscribe to queryParams and fragment of the route instance (this.route.fragment.subscribe())
+
+```
+ngOnInit() {
+    const id = +this.route.snapshot.params["id"];
+    this.server = this.serversService.getServer(id);
+
+    this.paramsSubscribtion = this.route.params.subscribe((params: Params) => {
+      this.server = this.serversService.getServer(+params["id"]);
+    });
+  }
+```
+
+_Note: all parans are string, so if u need int, u have to parse it._
+
+#### Nested Routes
+
+U can provide nested route with children property:
+
+```
+{
+    path: "servers",
+    component: ServersComponent,
+    children: [
+      {
+        path: ":id",
+        component: ServerComponent
+      },
+      {
+        path: ":id/edit",
+        component: EditServerComponent
+      }
+    ]
+  }
+```
+
+And then, in parent file add <router-outlet/>, where the children will be displayed.
+
+To keep query params in the next route - add queryParamsHandling:
+
+```
+this.router.navigate(["edit"], {
+      relativeTo: this.route,
+      queryParamsHandling: "preserve"
+});
+```
+
+#### Redirecting:
+
+```
+{
+    path: "",
+    component: HomeComponent
+},
+{
+    path: "home",
+    redirectTo: ""
+},
+```
+
+#### Catch all routes, not provided in the App:
+
+\*\* - wildcard
+
+```
+{
+    path: "**",
+    component: PageNotFoundComponent
+}
+```
+
+_NOTE:_
+\*By default, Angular matches paths by prefix. That means, that the following route will match both /recipes and just /
+
+{ path: '', redirectTo: '/somewhere-else' }
+
+Actually, Angular will give you an error here, because that's a common gotcha: This route will now ALWAYS redirect you! Why?
+
+Since the default matching strategy is "prefix" , Angular checks if the path you entered in the URL does start with the path specified in the route. Of course every path starts with '' (Important: That's no whitespace, it's simply "nothing").
+
+To fix this behavior, you need to change the matching strategy to "full" :
+
+{ path: '', redirectTo: '/somewhere-else', pathMatch: 'full' }
+
+Now, you only get redirected, if the full path is '' (so only if you got NO other content in your path in this example).\*
+
+#### Outsourcing the Route Config
+
+1. Move all routes ti app-routing.module.ts
+2.
+
+```
+@NgModule({
+  imports: [RouterModule.forRoot(appRoutes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule {}
+```
+
+3. Include route module in app module
+
+#### Route Guards
+
+1. Creating AuthGuard Service:
+   It's a class that implements CanACtivate interface
+
+```
+import {
+  CanActivate,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+  Router
+} from "@angular/router";
+import { Observable } from "rxjs";
+import { Injectable } from "@angular/core";
+import { AuthService } from "./auth.service";
+
+@Injectable()
+export class AuthGuard implements CanActivate {
+  constructor(private authService: AuthService, private router: Router) {}
+
+  async canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean> | Promise<boolean> | boolean {
+    const isAuthenticated = await this.authService.isAuthenticated();
+
+    if (!isAuthenticated) this.router.navigate(["/"]);
+
+    return true;
+  }
+}
+
+```
+
+2. Add this AuthGuard to canActivate property on the route:
+
+```
+path: "servers",
+component: ServersComponent,
+canActivate: [AuthGuard]
+```
+
+**Protecting only child routes:**
+
+```
+canActivateChild(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Promise<boolean> {
+    return this.canActivate(route, state);
+}
+```
+
+Route:
+
+```
+path: "servers",
+component: ServersComponent,
+canActivateChild: [AuthGuard],
+children: []
+```
+
+#### Before leaving route:
+
+Deactivate service :
+
+```
+import { Observable } from "rxjs";
+import {
+  CanDeactivate,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot
+} from "@angular/router";
+
+export interface CanComponentDeactivate {
+  canDeactivate: () => Observable<boolean> | Promise<boolean> | boolean;
+}
+
+export class CanDeactivateGuard
+  implements CanDeactivate<CanComponentDeactivate> {
+  canDeactivate(
+    component: CanComponentDeactivate,
+    currentRoute: ActivatedRouteSnapshot,
+    currentState: RouterStateSnapshot,
+    nextState?: RouterStateSnapshot
+  ): Observable<boolean> | Promise<boolean> | boolean {
+    return component.canDeactivate();
+  }
+}
+```
+
+Usage:
+
+```
+canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
+    if (!this.allowEdit) {
+      return true;
+    }
+    if (condition) {
+      return confirm("Do you want to discard changes?");
+    } else {
+      return true;
+    }
+  }
+```
+
+#### Pass static data vie route
+
+U can specify it in data property on route object:
+
+```
+{
+    path: "404",
+    component: ErrorMessageComponent,
+    data: {
+      message: "Page not Found!"
+    }
+}
+```
+
+#### Pass dynamic data
+
+To make an http request before displaying the router u have to add a resolver.
+Data will be fetched before the route is loaded. Alternative is to fetch data in ngOnInit.
+
+```
+{
+    path: ":id",
+    component: ServerComponent,
+    resolve: { server: ServerResolver }
+}
+```
+
+ServerResolver.service.ts:
+
+```
+export class ServerResolver implements Resolve<Server> {
+  constructor(private serversService: ServersService) {}
+
+  resolve(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<Server> | Promise<Server> | Server {
+    return this.serversService.getServer(+route.params["id"]);
+  }
+}
+```
+
+Server.component.ts:
+
+```
+ngOnInit() {
+    // Variant 1
+    // const id = +this.route.snapshot.params["id"];
+    // this.server = this.serversService.getServer(id);
+
+    // this.paramsSubscribtion = this.route.params.subscribe((params: Params) => {
+    //   this.server = this.serversService.getServer(+params["id"]);
+    // });
+
+    // Variant 2
+    this.route.data.subscribe((data: Data) => {
+      this.server = data["server"];
+    });
+}
+```
+
+And get access to it from route instance:
+
+```
+ngOnInit() {
+    this.errorMessage = this.route.snapshot.data["message"];
+    this.route.data.subscribe((data: Data) => {
+      this.errorMessage = data["message"];
+    });
+}
+```
+
+#### Using hash config:
+
+```
+[RouterModule.forRoot(appRoutes, {useHash: true})]
 ```
 
 ## Observables
