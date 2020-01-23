@@ -1130,6 +1130,33 @@ If u place new after :id, Angular will try to parse "new" and u will got an erro
 
 ## Observables
 
+```
+const customIntervalObservable = Observable.create(observer => { //observer === listener
+  let count = 0;
+
+  setInterval(() => {
+    observer.next(count); // next iteration
+    if (count === 2) {
+      observer.complete(); // finish listening
+    }
+    if (count > 3) {
+      observer.error(new Error("Count is greater than 3")); // fire an error
+    }
+    count++;
+  }, 1000);
+});
+```
+
+Usage:
+
+```
+this.counter = customIntervalObservable.subscribe(
+  data => console.log(data), // callback that should be executed
+  error => console.log(error), // error handler
+  () => console.log("Completed !") // callback which if fired when observer is completed
+);
+```
+
 ## Forms
 
 ## Pipes
