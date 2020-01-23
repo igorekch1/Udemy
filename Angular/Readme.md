@@ -1115,6 +1115,19 @@ ngOnInit() {
 [RouterModule.forRoot(appRoutes, {useHash: true})]
 ```
 
+```
+{
+    path: "new",
+    component: RecipeEditComponent
+},
+{
+    path: ":id",
+    component: RecipeDetailComponent
+},
+```
+
+If u place new after :id, Angular will try to parse "new" and u will got an error, so just swap these two routes.
+
 ## Observables
 
 ## Forms
