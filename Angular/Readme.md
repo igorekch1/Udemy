@@ -1130,6 +1130,14 @@ If u place new after :id, Angular will try to parse "new" and u will got an erro
 
 ## Observables
 
+An observable represents a stream, or source of data that can arrive over time.
+
+Observables provide support for passing messages between publishers and subscribers in your application. Observables offer significant benefits over other techniques for event handling, asynchronous programming, and handling multiple values.
+
+As a publisher, you create an Observable instance that defines a subscriber function. This is the function that is executed when a consumer calls the subscribe() method. The subscriber function defines how to obtain or generate values or messages to be published.
+
+To execute the observable you have created and begin receiving notifications, you call its subscribe() method, passing an observer. This is a JavaScript object that defines the handlers for the notifications you receive. The subscribe() call returns a Subscription object that has an unsubscribe() method, which you call to stop receiving notifications.
+
 ```
 const customIntervalObservable = Observable.create(observer => { //observer === listener
   let count = 0;
@@ -1157,7 +1165,166 @@ this.counter = customIntervalObservable.subscribe(
 );
 ```
 
+**Subject** is more actively Observer and better approach than EventEmitter. U can call next on it;
+Use Subjects to communicate across components, but use regular EventEmitter for parent-child communication.
+
+```
+export class UserService {
+  activatedEmitter = new Subject<boolean>();
+}
+```
+
+Dispatch Event:
+
+```
+this.userService.activatedEmitter.next(true);
+```
+
+Subscribe:
+
+```
+this.userService.activatedEmitter.subscribe(
+  (data: boolean) => {
+    this.isActivated = data;
+  }
+);
+```
+
+#### Operators
+
+Operators offer a way to manipulate values from a source, returning an observable of the transformed values.
+
+1. pipe - The pipe function is the assembly line from your observable data source through your operators.
+   For more examples look https://www.learnrxjs.io/learn-rxjs/operators.
+
+Example:
+
+```
+customIntervalObservable
+  .pipe(
+    filter((data: number) => {
+      return data > 0;
+    }),
+    map((data: number) => {
+      return "Round " + (data + 1);
+    })
+  )
+  .subscribe(
+    data => console.log(data),
+    error => console.log(error),
+    () => console.log("Completed !")
+  );
+```
+
 ## Forms
+
+Angular offers two approaches:
+
+1. Template-Driven(TD) - Angular infers the Form Object from the DOM
+2. Reactive - Form is created programmatically and synchronized with the DOM.
+
+### Template Driven
+
+To tell Angular u are need an input add ngModel to it to be contolled and the name of this control:
+
+```
+<input type="email" id="email" class="form-control" ngModel name="email" />
+```
+
+To get access to the form --> set ref on the form and assign ngForm to it, pass this ref to onSubmit:
+
+```
+<form (ngSubmit)="onSubmit(form)" #form="ngForm"></form>
+```
+
+```
+onSubmit(form: NgForm) {
+    console.log(form);
+}
+```
+
+It will be the object with value property, which consists all _named_ inputs.
+
+Another approach to acess the form is ViewChild():
+
+```
+@ViewChild("form", { static: true }) signupForm: NgForm;
+```
+
+Angular add classes to inputs depending on valid field or not, was touched etc.
+
+#### Validators:
+
+Validators are directives.
+
+- required
+- minlength etc.
+  All validators can be found here - https://angular.io/api/forms/Validators.
+
+```
+<input
+  type="email"
+  id="email"
+  class="form-control"
+  ngModel
+  name="email"
+  required
+  minlength="10"
+/>
+```
+
+U can easily get access to the form in the template:
+
+```
+<button class="btn btn-primary" type="submit" [disabled]="!form.valid">
+  Submit
+</button>
+```
+
+Styling invalid input when it was touched:
+
+```
+input.ng-invalid.ng-touched {
+  border: 1px solid #ff0000;
+}
+```
+
+Access to the state of the input by providing ref w/ _ngModel_:
+
+```
+<input
+  type="email"
+  id="email"
+  class="form-control"
+  ngModel
+  name="email"
+  required
+  minlength="10"
+  #email="ngModel"
+/>
+<span *ngIf="!email.valid && email.touched" class="help-block"
+  >Please enter a valid value!</span>
+```
+
+#### Default values:
+
+Provide ngModel as directive and assign value to it (**One-way binding**):
+
+```
+<select
+    [ngModel]="'pet'" // also, it can be a variable
+    name="secret"
+  >
+    <option value="pet">Your first Pet?</option>
+    <option value="teacher">Your first teacher?</option>
+  </select>
+```
+
+#### Grouping input
+
+Can ba implemented with ngModelGroup
+
+### Reactive
 
 ## Pipes
 
