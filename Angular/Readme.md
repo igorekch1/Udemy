@@ -1324,6 +1324,60 @@ Provide ngModel as directive and assign value to it (**One-way binding**):
 
 Can ba implemented with ngModelGroup
 
+```
+<div id="user-data" ngModelGroup="userData">
+	...inputs
+</div>
+```
+
+Can be found in forms.controls. Also, the group is added specific classes on diff actions and has the same behaviors as regular inputs(was touched etc.).
+
+**Rendering radio buttons**
+
+```
+<div class="radio" *ngFor="let gender of genders">
+  <label>
+    <input type="radio" name="gender" ngModel [value]="gender" />
+    {{ gender }}
+  </label>
+</div>
+```
+
+#### Setting and Patching Form Values
+
+U can set values of the form invoking setValue on the form ref instance, but u have to set all values of the form,
+so it's not convenient if u've already written down some values and then set the form values, cause all values would be overwritten.
+
+```
+this.signupForm.setValue({
+  userData: {
+    userName: "Some name",
+    email: "",
+    ...otherInputValues
+  },
+  ...otherGroups
+});
+```
+
+So, the better approach is to access the form object on the signupForm ref and use _patchValue()_ method
+and set only specific value:
+
+```
+this.signupForm.form.patchValue({
+      userData: {
+        userName: suggestedName
+      }
+    });
+```
+
+#### Resetting form
+
+All values, classes, states will be resetted. Just call reset on the form:
+
+```
+ this.signupForm.form.reset();
+```
+
 ### Reactive
 
 ## Pipes
