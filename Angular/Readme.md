@@ -1378,7 +1378,251 @@ All values, classes, states will be resetted. Just call reset on the form:
  this.signupForm.form.reset();
 ```
 
+_Also, u can pass an object to reset to specific values_
+
 ### Reactive
+
+Form is created programmatically and synchronized with the DOM.
+First of all, import ReactiveFormsModule in app.module.ts, regular FormsModules is used in Template Driven approach.
+Form can be created w/ FormGroup() constructor, which requires an object w/ your custom fields, validators and etc.
+
+```
+this.signupForm = new FormGroup({})
+```
+
+To synhronize with the form in template add formGroup directive:
+
+```
+<form [formGroup]="signupForm"></form>
+```
+
+**Setting up fields**
+Field can be created with FormControl() constructor, which accepts the default value:
+
+```
+this.signupForm = new FormGroup({
+  username: new FormControl("Default username"),
+});
+```
+
+To synchronize it with the template add formControlName directive:
+
+```
+<input
+    type="text"
+    id="username
+    formControlName="username"
+/>
+```
+
+_To get the access to the form in code u don't have to pass any references cause it's initialized programmatically in ts_
+_It's actually has the same structure as in TD approach_
+
+##### Validation
+
+Validator can be passed as a 2nd param to FormControl:
+
+```
+  username: new FormControl("Default username", Validators.required),
+  // also u can pass an array of validators:
+  email: new FormControl(null, [Validators.required, Validators.email])
+
+```
+
+#### Nested forms
+
+Form is declared in FormGroup() constructor not depending it's form or part of form:
+
+```
+this.signupForm = new FormGroup({
+  userData: new FormGroup({
+    username: new FormControl("Default username", Validators.required),
+    email: new FormControl(null, [Validators.required, Validators.email])
+  }),
+  gender: new FormControl("male")
+});
+```
+
+Add formGroupName in the template:
+
+```
+<form [formGroup]="signupForm">
+    <div formGroupName="userData">
+        <div class="form-group">
+            <input
+              type="text"
+              id="username"
+              class="form-control"
+              formControlName="username"
+            />
+        </div>
+    </div>
+</form>
+```
+
+#### Getting access to controls:
+
+Using method get('control-name') u can access the state of the control:
+
+```
+<span
+  *ngIf="
+    !signupForm.get('userData.username').valid &&
+    signupForm.get('userData.username').touched
+  "
+  >Please enter a valid username!</span
+>
+```
+
+#### Array of Form Controls
+
+Form:
+
+```
+this.signupForm = new FormGroup({
+  hobbies: new FormArray([])
+});
+```
+
+Template:
+
+```
+<div formArrayName="hobbies">
+  <h4>Your Hobbies</h4>
+  <button class="btn btn-default" type="button" (click)="addHobby()">
+    Add Hobby
+  </button>
+  <div
+    class="form-group"
+    *ngFor="
+      let hobbyControl of signupForm.get('hobbies').controls;
+      let i = index
+    "
+  >
+    <input type="text" class="form-control" [formControlName]="i" />
+  </div>
+</div>
+```
+
+.ts:
+
+```
+addHobby() {
+    (<FormArray>this.signupForm.get("hobbies")).push(
+      new FormControl(null, Validators.required)
+    );
+}
+```
+
+#### Custom Validators
+
+Add custom validator function in the array of validators and bind the context:
+
+```
+username: new FormControl("Default username", [
+  Validators.required,
+  this.forbiddenNames.bind(this)
+]),
+```
+
+forbiddenNames():
+
+```
+forbiddenNames(control: FormControl): { [s: string]: boolean } {
+    if (this.forbiddenUserNames.indexOf(control.value) !== -1)
+      return {
+        nameIsForbidden: true
+      };
+
+    return null;
+}
+```
+
+**Validator should return an object or null.**
+_Handling errors:_
+
+```
+<span
+  class="helper-block"
+  *ngIf="
+    signupForm.get('userData.username').errors &&
+    signupForm.get('userData.username').errors.nameIsForbidden
+  "
+  >This name is forbidden!</span
+>
+```
+
+##### Async Validator
+
+Is passed as the 3rd param to the FormContols:
+
+```
+email: new FormControl(
+  null,
+  [Validators.required, Validators.email],
+  this.forbiddenEmails.bind(this)
+)
+```
+
+forbiddenEmails returning promise(server response simulation):
+
+```
+forbiddenEmails(control: FormControl): Promise<any> {
+    const promise = new Promise<any>((resolve, reject) => {
+      setTimeout(() => {
+        if (control.value === "test@test.com") {
+          resolve({ emailIsForbidden: true }); // return object if error
+        } else {
+          resolve(null); // return null if no error
+        }
+      }, 1000);
+    });
+
+    return promise;
+}
+```
+
+#### Reacting to Status and Value Changes
+
+The form has two Observables:
+
+- valueChanges - fires when any of form's value is changed
+- statusChanged - status of the form:
+  - INVALID
+  - VALID
+  - PENDING (async validtor handling)
+
+```
+this.signupForm.statusChanges.subscribe((value) => {})
+```
+
+#### Setting and Patching and Resetting Reactive Form
+
+The same as in TD approach
+
+```
+this.signupForm.setValue({ // Changing the whole form
+  userData: {
+    username: "Test",
+    email: 'email
+    ....
+  }
+})
+
+this.signupForm.patchValue({ // Changing separate value
+  userData: {
+    username: "Adam"
+  }
+});
+```
+
+**As a best practive u can separate the validator logic and move to anothe file:**
+
+```
+export class CustomValidators {
+	static invalidProjectName() {}
+}
+```
 
 ## Pipes
 
