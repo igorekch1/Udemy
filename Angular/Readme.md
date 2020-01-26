@@ -745,7 +745,7 @@ this.router.navigate(["servers"], { relativeTo: this.route });
 
 #### Fetching route params
 
-Dynamicallu loaded component:
+Dynamically loaded component:
 
 ```
 {
@@ -1306,6 +1306,12 @@ Access to the state of the input by providing ref w/ _ngModel_:
   >Please enter a valid value!</span>
 ```
 
+_You can add a pattern to an input:_
+
+```
+pattern="^[1-9]+[0-9]*$"
+```
+
 #### Default values:
 
 Provide ngModel as directive and assign value to it (**One-way binding**):
@@ -1512,6 +1518,16 @@ addHobby() {
       new FormControl(null, Validators.required)
     );
 }
+```
+
+_FormArray has removeAt and clear methods:_
+
+```
+(this.recipeForm.get("ingredients") as FormArray).removeAt(index); // removespecific FormControl
+```
+
+```
+(this.recipeForm.get("ingredients") as FormArray).clear(); // removes all FormControls
 ```
 
 #### Custom Validators
