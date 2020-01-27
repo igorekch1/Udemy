@@ -22,7 +22,7 @@ Angular is split in many packages. So, if u need to use some feature u need to i
 
 To use component u have to import it **app.module.ts** to declaration field:
 
-```
+```typescript
 import { AppComponent } from "./app.component";
 import { ServerComponent } from "./server/server.component";
 
@@ -39,7 +39,7 @@ export class AppModule {}
 
 To create a component w/ CLI run:
 
-```
+```typescript
 ng generate component [name] or ng g c [name]
 ```
 
@@ -47,7 +47,7 @@ ng generate component [name] or ng g c [name]
 
 Replace templateUrl w/ just template and provider specific template there.
 
-```
+```typescript
 @Component({
   selector: "app-servers",
   template: `
@@ -62,7 +62,7 @@ Replace templateUrl w/ just template and provider specific template there.
 
 1.By selector:
 
-```
+```typescript
 selector: "app-servers"
 
 <app-servers></app-servers>
@@ -70,7 +70,7 @@ selector: "app-servers"
 
 2. By attribute
 
-```
+```typescript
 selector: "[app-servers]"
 
 <div app-servers></div>
@@ -78,7 +78,7 @@ selector: "[app-servers]"
 
 3. By class
 
-```
+```typescript
 selector: ".app-servers"
 
 <div class=".app-servers"></div>
@@ -86,7 +86,7 @@ selector: ".app-servers"
 
 Also, you can provide inline CSS using styles instead of styleUrls. It will have higher priority cause it's inline styles:
 
-```
+```typescript
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
@@ -104,7 +104,7 @@ Also, you can provide inline CSS using styles instead of styleUrls. It will have
 
 To pass children to component u can use special directive - _ng-content_:
 
-```
+```typescript
 <app-server-element
       >
     <p>Children</p>
@@ -113,7 +113,7 @@ To pass children to component u can use special directive - _ng-content_:
 
 server-element.component.ts:
 
-```
+```typescript
 <div>
     <ng-content></ng-content> // <p>Children</p>
 </div>
@@ -123,7 +123,7 @@ server-element.component.ts:
 
 ## DataBinding
 
-```
+```typescript
 export class TestCmp {
   data: Interface = {};
 }
@@ -135,7 +135,7 @@ export class TestCmp {
 
 To use property binding put an attribute in brackets:
 
-```
+```typescript
 <button class="btn btn-primary" [disabled]="!allowAdd">Add</button>
 ```
 
@@ -143,7 +143,7 @@ To use property binding put an attribute in brackets:
 
 Provide event in curly braces and a function to execute.
 
-```
+```typescript
 <button
   (click)="onCreate()"
 >
@@ -153,7 +153,7 @@ Provide event in curly braces and a function to execute.
 
 Passing an event object w \$event:
 
-```
+```typescript
 <input type="text" class="form-control" (input)="onUpdateServerName($event)" />
 ```
 
@@ -161,7 +161,7 @@ Passing an event object w \$event:
 
 Combines both event and property binding:
 
-```
+```typescript
 <input type="text" class="form-control" [(ngModel)]="someField" />
 ```
 
@@ -171,7 +171,7 @@ Combines both event and property binding:
 
 To pass prop to child component you have to bind it on component you want to pass it to:
 
-```
+```typescript
 app-server-element
     *ngFor="let serverElement of serverElements"
     [element]="serverElement"
@@ -180,14 +180,14 @@ app-server-element
 
 And in child component you have to add _Input_ decorator to this prop:
 
-```
+```typescript
   @Input() element: { type: string; name: string; content: string };
 
 ```
 
 #### Assinging an Alias
 
-```
+```typescript
 [srvElement]="serverElement"
 
 
@@ -200,7 +200,7 @@ Using EventEmitter:
 
 1. Bind custom event on child component:
 
-```
+```typescript
 <app-cockpit
     (serverCreated)="onServerAdded($event)"
 ></app-cockpit>
@@ -208,7 +208,7 @@ Using EventEmitter:
 
 2. In child component declare this event:
 
-```
+```typescript
 @Output() serverCreated = new EventEmitter<{
     serverName: string;
     serverContent: string;
@@ -217,7 +217,7 @@ Using EventEmitter:
 
 3. Emit an event from child component:
 
-```
+```typescript
 this.serverCreated.emit({
   serverName: this.newServerName,
   serverContent: this.newServerContent
@@ -226,7 +226,7 @@ this.serverCreated.emit({
 
 4. Handle it in parent component:
 
-```
+```typescript
 onServerAdded(serverData: { serverName: string; serverContent: string }) {
     // do some stuff
   }
@@ -236,7 +236,7 @@ onServerAdded(serverData: { serverName: string; serverContent: string }) {
 
 Pass named event to child component and listen to it providing the same name to Output decorator parameter.
 
-```
+```typescript
 <app-cockpit
     (bpCreated)="onBluePrintAdded($event)"
 ></app-cockpit>
@@ -251,7 +251,7 @@ Angular adds the same attribute to all DOM elements of the component, so that's 
 
 To turn of style encapsulation you have to provide _encapsulation field_ and set it to ViewEncapsulation.None. Styles of this component will global.
 
-```
+```typescript
 @Component({
   encapsulation: ViewEncapsulation.None // Native, Emulated (default)
 })
@@ -261,14 +261,14 @@ To turn of style encapsulation you have to provide _encapsulation field_ and set
 
 U can privide reference with #name and use it only in template where it was defined.
 
-```
+```typescript
     <input type="text" class="form-control" #serverNameInput />
     <button class="btn btn-primary" (click)="onAddServer(serverNameInput)">Add Server</button>
 ```
 
 The ref is DOM element, so if u want to extract a value you can access it on the ref.value:
 
-```
+```typescript
 onAddServer(nameInput: HTMLInputElement) {
     this.serverCreated.emit({
       serverName: nameInput.value
@@ -281,25 +281,25 @@ onAddServer(nameInput: HTMLInputElement) {
 Alternativly to local references, u can use @ViewChild decorator, instead.
 @ViewChild('selector', {static : bool}). static param will be removed in Angular 9.
 
-```
+```typescript
 <input type="text" class="form-control" #serverContent />
 ```
 
 .ts:
 
-```
+```typescript
 @ViewChild("serverContent", { static: true }) serverContentInput: ElementRef;
 ```
 
 Type - ElementRef. Access to value:
 
-```
+```typescript
 this.serverContentInput.nativeElement.value
 ```
 
 Also, u can set ref on the Component:
 
-```
+```typescript
 <color-sample
   #primaryColorSample
 </color-sample>
@@ -310,7 +310,7 @@ Also, u can set ref on the Component:
 
 If u want to write component initialization code that uses the references injected by @ViewChild, u need to do it inside the AfterViewInit lifecycle hook:
 
-```
+```typescript
 @ViewChild(ColorSampleComponent)
   primarySampleComponent: ColorSampleComponent;
 
@@ -323,7 +323,7 @@ If u want to write component initialization code that uses the references inject
 
 To pass children to a component u can use specific directive _ng-model_
 
-```
+```typescript
 <app-server-element>
    <p>Children</p>
 </app-server-element>
@@ -331,7 +331,7 @@ To pass children to a component u can use specific directive _ng-model_
 
 server-element.component.ts
 
-```
+```typescript
 <div>
     <ng-content></ng-content> // <p>Children</p>
 </div>
@@ -382,13 +382,13 @@ Directives are divided into attribute and structural directives.
 
 For example:
 
-```
+```typescript
 <div *ngIf="condition"></div>
 ```
 
 _is transformed into:_
 
-```
+```typescript
 <ng-template [ngIf]="condition">
 	<div></div>
 </ng-template>
@@ -396,7 +396,7 @@ _is transformed into:_
 
 - \*ngIf="" - doesn't place in DOM if not true
 
-```
+```typescript
 <p *ngIf="serverCreated; else noServer">{{ creationStatus }}</p>
 
 <ng-template #noServer>
@@ -406,7 +406,7 @@ _is transformed into:_
 
 - ngStyle - attribute directive
 
-```
+```typescript
 <p [ngStyle]="{ backgroundColor: getColor() }">
   Server w/ ID: {{ serverId }} is {{ getStatus() }}
 </p>
@@ -414,13 +414,13 @@ _is transformed into:_
 
 - ngClass
 
-```
+```typescript
 [ngClass]="{ "online": status === 'online' }"
 ```
 
 -\*ngFor="let item of items; let i = index"
 
-```
+```typescript
 <li
     *ngFor="let value of array"
 >
@@ -430,7 +430,7 @@ _is transformed into:_
 
 -ngSwitch
 
-```
+```typescript
 <div [ngSwitch]="conditionExpression">
     <div *ngSwitchCase="expression">output</div>
     <div *ngSwitchDefault>output2</div>
@@ -444,7 +444,7 @@ Then u have to initialize it in the constructor and u can access it in ngOnInit 
 
 #### Attribute directive
 
-```
+```typescript
 import { Directive, ElementRef, OnInit } from "@angular/core";
 
 @Directive({
@@ -462,7 +462,7 @@ export class BasicHighlightDirective implements OnInit {
 
 Also, do not forget to register it in module:
 
-```
+```typescript
 declarations: [
     AppComponent,
     // directives
@@ -472,7 +472,7 @@ declarations: [
 
 Better practice is not to change element directly, because in some circumstances u'll get some errors, but use _renderer_:
 
-```
+```typescript
 constructor(private elRef: ElementRef, private renderer: Renderer2) {}
 
 ngOnInit() {
@@ -487,7 +487,7 @@ ngOnInit() {
 Also, u can listen for events and provide specific handler. This can be arranged w/ _HostListener_ decorator:
 HostListener(eventName, args) - Decorator that declares a DOM event to listen for, and provides a handler method to run when that event occurs.
 
-```
+```typescript
 @HostListener("mouseenter") mouseover(eventData: Event) {
     this.renderer.setStyle(
       this.elRef.nativeElement,
@@ -500,7 +500,7 @@ HostListener(eventName, args) - Decorator that declares a DOM event to listen fo
 Even better approach is _HostBinding_ decorator.
 It's decorator that marks a DOM property as a host-binding property and supplies configuration metadata. Angular automatically checks host property bindings during change detection, and if a binding changes it updates the host element of the directive.
 
-```
+```typescript
 export class BetterHighlightDirective implements OnInit {
   @HostBinding("style.backgroundColor") backgroundColor: string = "blue";
 
@@ -520,13 +520,13 @@ export class BetterHighlightDirective implements OnInit {
 
 U could, also, pass attributes to custom directive:
 
-```
+```typescript
 <p appBetterHighlight [defaultColor]="'yellow'" [highlightColor]="'red'">
     Style me with better directive!
 </p>
 ```
 
-```
+```typescript
 export class BetterHighlightDirective implements OnInit {
   @Input() defaultColor: string = "transparent";
   @Input() highlightColor: string = "blue";
@@ -550,7 +550,7 @@ export class BetterHighlightDirective implements OnInit {
 
 Remove quotation marks:
 
-```
+```typescript
 <p appBetterHighlight defaultColor="yellow" highlightColor="red">
     Style me with better directive!
 </p>
@@ -558,7 +558,7 @@ Remove quotation marks:
 
 #### Creating structural directive
 
-```
+```typescript
 @Directive({
   selector: "[appUnless]"
 })
@@ -580,7 +580,7 @@ export class UnlessDirective {
 
 Setter should be the same as directive on th element:
 
-```
+```typescript
 <div *appUnless="!condition">
 </div>
 ```
@@ -599,7 +599,7 @@ To require such instance add it to constructor and provide a type(required). And
 
 service.ts:
 
-```
+```typescript
 export class LogginService {
   logStatusChange(status: string) {
     console.log("A server status changed, new status: " + status);
@@ -610,7 +610,7 @@ export class LogginService {
 
 usage:
 
-```
+```typescript
 @Component({
   selector: "app-new-account",
   providers: [LoggingService]
@@ -627,7 +627,7 @@ So, u can remove service from providers array of child components, but leave it 
 _To inject service into another serive u have to register it on more global level(module)._
 _And provide Injectable decorator to the service u inject in:_
 
-```
+```typescript
 import { LoggingService } from "./logging.service";
 import { Injectable } from "@angular/core";
 
@@ -647,7 +647,7 @@ export class AccountsService {
 
 Beginning with Angular 6.0, the preferred way to create a singleton service is to set providedIn to root on the service's @Injectable() decorator. This tells Angular to provide the service in the application root.
 
-```
+```typescript
 @Injectable({providedIn: 'root'})
 export class MyService { ... }
 
@@ -657,7 +657,7 @@ export class MyService { ... }
 
 First of all, u have to import ROutes and RouterModule from @angular/router and create routes array.
 
-```
+```typescript
 import { Routes, RouterModule } from "@angular/router";
 
 const appRoutes: Routes = [
@@ -678,7 +678,7 @@ const appRoutes: Routes = [
 
 Register it in imports of the module:
 
-```
+```typescript
 @NgModule({
   imports: [RouterModule.forRoot(appRoutes)],
   providers: [ServersService],
@@ -688,13 +688,13 @@ Register it in imports of the module:
 
 Router Link :
 
-```
+```typescript
 <a routerLink="/users">Users</a>
 ```
 
 or
 
-```
+```typescript
 <a [routerLink]="['/users']">Users</a>
 ```
 
@@ -705,7 +705,7 @@ users - relative path
 
 The RouterLinkActive directive toggles css classes for active RouterLink bindings based on the current RouterState.
 
-```
+```typescript
 <li routerLinkActove="active" [routerLinkActiveOptions]="{exact: true}">
   <a routerLink="/users">Users</a>
 </li>
@@ -717,27 +717,27 @@ The RouterLinkActive directive toggles css classes for active RouterLink binding
 
 Firstly, u have to inject router:
 
-```
+```typescript
 constructor(private router: Router) {}
 
 ```
 
 And user navigate on route instance, which accepts array of routes as a param:
 
-```
+```typescript
 this.router.navigate(["servers"]);
 ```
 
 If u're navigating to route w/ relative path like
 
-```
+```typescript
 this.router.navigate(['servers'])
 ```
 
 Nothing will happen cause router doesn't know on which route u're now, but routerLink does.
 So, to tell on whick route u are u have to pass 2nd param - relativeTo and inject the active route.
 
-```
+```typescript
 constructor(private route: ActivatedRoute) {}
 
 this.router.navigate(["servers"], { relativeTo: this.route });
@@ -747,7 +747,7 @@ this.router.navigate(["servers"], { relativeTo: this.route });
 
 Dynamically loaded component:
 
-```
+```typescript
 {
     path: "users/:id/:name",
     component: UserComponent
@@ -756,7 +756,7 @@ Dynamically loaded component:
 
 So, in User Component u can access the params from active route:
 
-```
+```typescript
 export class UserComponent implements OnInit {
   user: { id: number; name: string };
 
@@ -775,7 +775,7 @@ export class UserComponent implements OnInit {
 But, the issue is that if params change, angular won't know about it cause component has already been initialized.
 So, u have to watch these params. Params are observable and u can subscribe to them:
 
-```
+```typescript
  ngOnInit() {
     this.user = {
       id: this.route.snapshot.params["id"],
@@ -791,7 +791,7 @@ So, u have to watch these params. Params are observable and u can subscribe to t
 The subscribtion are cleaned by Angular automatically, but it's good to do cause u can provide your own observables.
 So, it's better to unsubscribe:
 
-```
+```typescript
 ngOnDestroy() {
     this.paramsSubsribtion.unsubscribe();
 }
@@ -804,7 +804,7 @@ queryparams - ?
 fragment - #
 /servers/5/edit?allowEdit=1
 
-```
+```typescript
 <a
     [routerLink]="['/servers', 5, 'edit']"
     [queryParams]="{ allowEdit: '1' }"
@@ -818,7 +818,7 @@ fragment - #
 
 Programmatically:
 
-```
+```typescript
 onLoadServers(id: number) {
     this.router.navigate(["servers", id, "edit"], {
       queryParams: { allowEdit: "1" },
@@ -832,7 +832,7 @@ onLoadServers(id: number) {
 1. U can access the snapshot of the route(this.route.snapshot.queryParams/fragment). But it won't be reactive, the same with params
 2. U can access subscribe to queryParams and fragment of the route instance (this.route.fragment.subscribe())
 
-```
+```typescript
 ngOnInit() {
     const id = +this.route.snapshot.params["id"];
     this.server = this.serversService.getServer(id);
@@ -849,7 +849,7 @@ _Note: all parans are string, so if u need int, u have to parse it._
 
 U can provide nested route with children property:
 
-```
+```typescript
 {
     path: "servers",
     component: ServersComponent,
@@ -870,7 +870,7 @@ And then, in parent file add <router-outlet/>, where the children will be displa
 
 To keep query params in the next route - add queryParamsHandling:
 
-```
+```typescript
 this.router.navigate(["edit"], {
       relativeTo: this.route,
       queryParamsHandling: "preserve"
@@ -879,7 +879,7 @@ this.router.navigate(["edit"], {
 
 #### Redirecting:
 
-```
+```typescript
 {
     path: "",
     component: HomeComponent
@@ -894,7 +894,7 @@ this.router.navigate(["edit"], {
 
 \*\* - wildcard
 
-```
+```typescript
 {
     path: "**",
     component: PageNotFoundComponent
@@ -921,7 +921,7 @@ Now, you only get redirected, if the full path is '' (so only if you got NO othe
 1. Move all routes ti app-routing.module.ts
 2.
 
-```
+```typescript
 @NgModule({
   imports: [RouterModule.forRoot(appRoutes)],
   exports: [RouterModule]
@@ -936,7 +936,7 @@ export class AppRoutingModule {}
 1. Creating AuthGuard Service:
    It's a class that implements CanACtivate interface
 
-```
+```typescript
 import {
   CanActivate,
   ActivatedRouteSnapshot,
@@ -967,7 +967,7 @@ export class AuthGuard implements CanActivate {
 
 2. Add this AuthGuard to canActivate property on the route:
 
-```
+```typescript
 path: "servers",
 component: ServersComponent,
 canActivate: [AuthGuard]
@@ -975,7 +975,7 @@ canActivate: [AuthGuard]
 
 **Protecting only child routes:**
 
-```
+```typescript
 canActivateChild(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
@@ -986,7 +986,7 @@ canActivateChild(
 
 Route:
 
-```
+```typescript
 path: "servers",
 component: ServersComponent,
 canActivateChild: [AuthGuard],
@@ -997,7 +997,7 @@ children: []
 
 Deactivate service :
 
-```
+```typescript
 import { Observable } from "rxjs";
 import {
   CanDeactivate,
@@ -1024,7 +1024,7 @@ export class CanDeactivateGuard
 
 Usage:
 
-```
+```typescript
 canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
     if (!this.allowEdit) {
       return true;
@@ -1041,7 +1041,7 @@ canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
 
 U can specify it in data property on route object:
 
-```
+```typescript
 {
     path: "404",
     component: ErrorMessageComponent,
@@ -1056,7 +1056,7 @@ U can specify it in data property on route object:
 To make an http request before displaying the router u have to add a resolver.
 Data will be fetched before the route is loaded. Alternative is to fetch data in ngOnInit.
 
-```
+```typescript
 {
     path: ":id",
     component: ServerComponent,
@@ -1066,7 +1066,7 @@ Data will be fetched before the route is loaded. Alternative is to fetch data in
 
 ServerResolver.service.ts:
 
-```
+```typescript
 export class ServerResolver implements Resolve<Server> {
   constructor(private serversService: ServersService) {}
 
@@ -1081,7 +1081,7 @@ export class ServerResolver implements Resolve<Server> {
 
 Server.component.ts:
 
-```
+```typescript
 ngOnInit() {
     // Variant 1
     // const id = +this.route.snapshot.params["id"];
@@ -1100,7 +1100,7 @@ ngOnInit() {
 
 And get access to it from route instance:
 
-```
+```typescript
 ngOnInit() {
     this.errorMessage = this.route.snapshot.data["message"];
     this.route.data.subscribe((data: Data) => {
@@ -1111,11 +1111,11 @@ ngOnInit() {
 
 #### Using hash config:
 
-```
+```typescript
 [RouterModule.forRoot(appRoutes, {useHash: true})]
 ```
 
-```
+```typescript
 {
     path: "new",
     component: RecipeEditComponent
@@ -1138,7 +1138,7 @@ As a publisher, you create an Observable instance that defines a subscriber func
 
 To execute the observable you have created and begin receiving notifications, you call its subscribe() method, passing an observer. This is a JavaScript object that defines the handlers for the notifications you receive. The subscribe() call returns a Subscription object that has an unsubscribe() method, which you call to stop receiving notifications.
 
-```
+```typescript
 const customIntervalObservable = Observable.create(observer => { //observer === listener
   let count = 0;
 
@@ -1157,7 +1157,7 @@ const customIntervalObservable = Observable.create(observer => { //observer === 
 
 Usage:
 
-```
+```typescript
 this.counter = customIntervalObservable.subscribe(
   data => console.log(data), // callback that should be executed
   error => console.log(error), // error handler
@@ -1168,7 +1168,7 @@ this.counter = customIntervalObservable.subscribe(
 **Subject** is more actively Observer and better approach than EventEmitter. U can call next on it;
 Use Subjects to communicate across components, but use regular EventEmitter for parent-child communication.
 
-```
+```typescript
 export class UserService {
   activatedEmitter = new Subject<boolean>();
 }
@@ -1176,13 +1176,13 @@ export class UserService {
 
 Dispatch Event:
 
-```
+```typescript
 this.userService.activatedEmitter.next(true);
 ```
 
 Subscribe:
 
-```
+```typescript
 this.userService.activatedEmitter.subscribe(
   (data: boolean) => {
     this.isActivated = data;
@@ -1199,7 +1199,7 @@ Operators offer a way to manipulate values from a source, returning an observabl
 
 Example:
 
-```
+```typescript
 customIntervalObservable
   .pipe(
     filter((data: number) => {
@@ -1227,17 +1227,17 @@ Angular offers two approaches:
 
 To tell Angular u are need an input add ngModel to it to be contolled and the name of this control:
 
-```
+```typescript
 <input type="email" id="email" class="form-control" ngModel name="email" />
 ```
 
 To get access to the form --> set ref on the form and assign ngForm to it, pass this ref to onSubmit:
 
-```
+```typescript
 <form (ngSubmit)="onSubmit(form)" #form="ngForm"></form>
 ```
 
-```
+```typescript
 onSubmit(form: NgForm) {
     console.log(form);
 }
@@ -1247,7 +1247,7 @@ It will be the object with value property, which consists all _named_ inputs.
 
 Another approach to acess the form is ViewChild():
 
-```
+```typescript
 @ViewChild("form", { static: true }) signupForm: NgForm;
 ```
 
@@ -1261,7 +1261,7 @@ Validators are directives.
 - minlength etc.
   All validators can be found here - https://angular.io/api/forms/Validators.
 
-```
+```typescript
 <input
   type="email"
   id="email"
@@ -1275,7 +1275,7 @@ Validators are directives.
 
 U can easily get access to the form in the template:
 
-```
+```typescript
 <button class="btn btn-primary" type="submit" [disabled]="!form.valid">
   Submit
 </button>
@@ -1283,7 +1283,7 @@ U can easily get access to the form in the template:
 
 Styling invalid input when it was touched:
 
-```
+```typescript
 input.ng-invalid.ng-touched {
   border: 1px solid #ff0000;
 }
@@ -1291,7 +1291,7 @@ input.ng-invalid.ng-touched {
 
 Access to the state of the input by providing ref w/ _ngModel_:
 
-```
+```typescript
 <input
   type="email"
   id="email"
@@ -1308,7 +1308,7 @@ Access to the state of the input by providing ref w/ _ngModel_:
 
 _You can add a pattern to an input:_
 
-```
+```typescript
 pattern="^[1-9]+[0-9]*$"
 ```
 
@@ -1316,7 +1316,7 @@ pattern="^[1-9]+[0-9]*$"
 
 Provide ngModel as directive and assign value to it (**One-way binding**):
 
-```
+```typescript
 <select
     [ngModel]="'pet'" // also, it can be a variable
     name="secret"
@@ -1330,7 +1330,7 @@ Provide ngModel as directive and assign value to it (**One-way binding**):
 
 Can ba implemented with ngModelGroup
 
-```
+```typescript
 <div id="user-data" ngModelGroup="userData">
 	...inputs
 </div>
@@ -1340,7 +1340,7 @@ Can be found in forms.controls. Also, the group is added specific classes on dif
 
 **Rendering radio buttons**
 
-```
+```typescript
 <div class="radio" *ngFor="let gender of genders">
   <label>
     <input type="radio" name="gender" ngModel [value]="gender" />
@@ -1354,7 +1354,7 @@ Can be found in forms.controls. Also, the group is added specific classes on dif
 U can set values of the form invoking setValue on the form ref instance, but u have to set all values of the form,
 so it's not convenient if u've already written down some values and then set the form values, cause all values would be overwritten.
 
-```
+```typescript
 this.signupForm.setValue({
   userData: {
     userName: "Some name",
@@ -1368,7 +1368,7 @@ this.signupForm.setValue({
 So, the better approach is to access the form object on the signupForm ref and use _patchValue()_ method
 and set only specific value:
 
-```
+```typescript
 this.signupForm.form.patchValue({
       userData: {
         userName: suggestedName
@@ -1380,7 +1380,7 @@ this.signupForm.form.patchValue({
 
 All values, classes, states will be resetted. Just call reset on the form:
 
-```
+```typescript
  this.signupForm.form.reset();
 ```
 
@@ -1392,20 +1392,20 @@ Form is created programmatically and synchronized with the DOM.
 First of all, import ReactiveFormsModule in app.module.ts, regular FormsModules is used in Template Driven approach.
 Form can be created w/ FormGroup() constructor, which requires an object w/ your custom fields, validators and etc.
 
-```
+```typescript
 this.signupForm = new FormGroup({})
 ```
 
 To synhronize with the form in template add formGroup directive:
 
-```
+```typescript
 <form [formGroup]="signupForm"></form>
 ```
 
 **Setting up fields**
 Field can be created with FormControl() constructor, which accepts the default value:
 
-```
+```typescript
 this.signupForm = new FormGroup({
   username: new FormControl("Default username"),
 });
@@ -1413,7 +1413,7 @@ this.signupForm = new FormGroup({
 
 To synchronize it with the template add formControlName directive:
 
-```
+```typescript
 <input
     type="text"
     id="username
@@ -1428,7 +1428,7 @@ _It's actually has the same structure as in TD approach_
 
 Validator can be passed as a 2nd param to FormControl:
 
-```
+```typescript
   username: new FormControl("Default username", Validators.required),
   // also u can pass an array of validators:
   email: new FormControl(null, [Validators.required, Validators.email])
@@ -1439,7 +1439,7 @@ Validator can be passed as a 2nd param to FormControl:
 
 Form is declared in FormGroup() constructor not depending it's form or part of form:
 
-```
+```typescript
 this.signupForm = new FormGroup({
   userData: new FormGroup({
     username: new FormControl("Default username", Validators.required),
@@ -1451,7 +1451,7 @@ this.signupForm = new FormGroup({
 
 Add formGroupName in the template:
 
-```
+```typescript
 <form [formGroup]="signupForm">
     <div formGroupName="userData">
         <div class="form-group">
@@ -1470,7 +1470,7 @@ Add formGroupName in the template:
 
 Using method get('control-name') u can access the state of the control:
 
-```
+```typescript
 <span
   *ngIf="
     !signupForm.get('userData.username').valid &&
@@ -1484,7 +1484,7 @@ Using method get('control-name') u can access the state of the control:
 
 Form:
 
-```
+```typescript
 this.signupForm = new FormGroup({
   hobbies: new FormArray([])
 });
@@ -1492,7 +1492,7 @@ this.signupForm = new FormGroup({
 
 Template:
 
-```
+```typescript
 <div formArrayName="hobbies">
   <h4>Your Hobbies</h4>
   <button class="btn btn-default" type="button" (click)="addHobby()">
@@ -1512,7 +1512,7 @@ Template:
 
 .ts:
 
-```
+```typescript
 addHobby() {
     (<FormArray>this.signupForm.get("hobbies")).push(
       new FormControl(null, Validators.required)
@@ -1522,11 +1522,11 @@ addHobby() {
 
 _FormArray has removeAt and clear methods:_
 
-```
+```typescript
 (this.recipeForm.get("ingredients") as FormArray).removeAt(index); // removespecific FormControl
 ```
 
-```
+```typescript
 (this.recipeForm.get("ingredients") as FormArray).clear(); // removes all FormControls
 ```
 
@@ -1534,7 +1534,7 @@ _FormArray has removeAt and clear methods:_
 
 Add custom validator function in the array of validators and bind the context:
 
-```
+```typescript
 username: new FormControl("Default username", [
   Validators.required,
   this.forbiddenNames.bind(this)
@@ -1543,7 +1543,7 @@ username: new FormControl("Default username", [
 
 forbiddenNames():
 
-```
+```typescript
 forbiddenNames(control: FormControl): { [s: string]: boolean } {
     if (this.forbiddenUserNames.indexOf(control.value) !== -1)
       return {
@@ -1557,7 +1557,7 @@ forbiddenNames(control: FormControl): { [s: string]: boolean } {
 **Validator should return an object or null.**
 _Handling errors:_
 
-```
+```typescript
 <span
   class="helper-block"
   *ngIf="
@@ -1572,7 +1572,7 @@ _Handling errors:_
 
 Is passed as the 3rd param to the FormContols:
 
-```
+```typescript
 email: new FormControl(
   null,
   [Validators.required, Validators.email],
@@ -1582,7 +1582,7 @@ email: new FormControl(
 
 forbiddenEmails returning promise(server response simulation):
 
-```
+```typescript
 forbiddenEmails(control: FormControl): Promise<any> {
     const promise = new Promise<any>((resolve, reject) => {
       setTimeout(() => {
@@ -1608,7 +1608,7 @@ The form has two Observables:
   - VALID
   - PENDING (async validtor handling)
 
-```
+```typescript
 this.signupForm.statusChanges.subscribe((value) => {})
 ```
 
@@ -1616,7 +1616,7 @@ this.signupForm.statusChanges.subscribe((value) => {})
 
 The same as in TD approach
 
-```
+```typescript
 this.signupForm.setValue({ // Changing the whole form
   userData: {
     username: "Test",
@@ -1634,15 +1634,276 @@ this.signupForm.patchValue({ // Changing separate value
 
 **As a best practive u can separate the validator logic and move to anothe file:**
 
-```
+```typescript
 export class CustomValidators {
 	static invalidProjectName() {}
 }
 ```
 
 ## Pipes
+Pipes are used to transform data.
+Usage: value | pipe
+| - pipe symbol
+```typescript
+{{server.status | uppercase}}
+```
+Built-in pipes:
+- uppercase
+- date
+- titlecase
+- decimal
+- slice etc.
+All pipes can be viewed: https://angular.io/api?type=pipe
+
+### Configure pipes:
+```typescript
+{{server.started | date:'fullDate'}}
+```
+
+### Chaining pipes:
+```typescript
+{{server.started | date:'fullDate' | uppercase}}
+```
+The order of the pipes are important, cause it;is applied in sequence
+
+### Creating own pipe
+Provide Pipe() decorator than accepts name of the pipe.
+shorten.pipe.ts:
+PipeTransform - interface than include transform method, which accepts the value and param
+```typescript
+@Pipe({
+	name: "shorten"
+})
+export class ShortenPipe implements PipeTransform {
+	transform(value: any, param:number, anotherArg) {
+    	return value.substr(0, param) + anotherArg
+    }
+}
+```
+app.module.ts:
+```typescript
+declarations: [
+	AppComponent,
+    ShortenPipe
+]
+```
+Usage:
+```typescript
+{{value | shorten:5:' ...'}}
+```
+
+Also, u can use pipes on arrays (especially, for filterring purposes):
+```ts
+<div *ngFor="let item of arr | filter: filteredStatus:'status'"></div>
+// filterStatus - ngModel input
+// status - prop of object in the array 
+```
+
+*Note: Angular is not rerunning the pipe when data changes(array or object data), cause it will cause performance issues*
+*So, if u want to force it, add pure: false to Pipe decorator:*
+```ts
+@Pipe({
+	name: "shorten",
+    pure: false // recalculate if anything is changed
+})
+```
+
+### Async Pipes
+Adding an async pipe u make Angular to watch changes and outpup the data when it will be resolved. 
+```ts
+{{status | async}}
+```
+
 
 ## HTTP
+First of all, u have to import HttpClientModule in app.module.ts
+Then to use httpClient add it in the constructor:
+```ts
+constructor(private http: HttpClient) {}
+```
+
+Sending a request:
+```ts
+this.http
+    .post("https://xxx/posts.json", postData)
+    .subscribe(responseData => {
+        console.log(responseData);
+    });
+```
+If u are not subscribing, Angular thinks u don't need the response, that's why it doesn't send a request even.
+
+### Using Rxjs to transform data:
+```ts
+this.http
+    .get("https://xxx/posts.json")
+    .pipe(
+    map(responseData => {
+      const posts = [];
+
+      for (const key in responseData) {
+        if (responseData.hasOwnProperty(key)) {
+          posts.push({ ...responseData[key], id: key });
+        }
+      }
+
+      return posts;
+    })
+    )
+    .subscribe(posts => {
+        console.log(posts);
+    });
+```
+
+### Typing
+U can specify response generetic type on http method in order to set the response type:
+```ts
+this.http
+  .post<{name: string}>("https://xxx/posts.json", postData)
+  .subscribe(responseData => {
+    console.log(responseData);
+  });
+```
+
+### Using service for Http Requests
+Return the Observable and subscribe in the component.
+```ts
+fetchPosts() {
+    return this.http
+      .get<{ [key: string]: PostModel }>(
+        "https://angular-98a53.firebaseio.com/posts.json"
+      )
+  }
+```
+
+### Handling error
+In subscribe function u can pass an error handler as a second param:
+```ts
+his.postService.fetchPosts().subscribe(
+  posts => {
+    this.loadedPosts = posts;
+    this.isFetching = false;
+  },
+  error => {
+    this.error = error.message;
+    this.isFetching = false;
+  }
+);
+```
+
+### Setting Header and Query Params
+```ts
+this.http
+  .get<{ [key: string]: PostModel }>(
+    "https://angular-98a53.firebaseio.com/posts.json",
+    {
+      headers: new HttpHeaders({
+        "Custom-Header": "Hello"
+      }),
+      params: new HttpParams().set('print', 'pretty') // ?print=pretty
+    }
+  )
+```
+*To set multiple params u can create new HttpParams intance and append the params there:*
+```ts
+const searchParams = new HttpParams();
+searchParams = searchParams.append('print', 'pretty');
+searchParams = searchParams.append('custom', 'key');
+```
+
+### Observing different types of Response
+U can change the way the data is parsed by adding an extra argument:
+```ts
+this.http
+  .post<{ name: string }>(
+    "https://angular-98a53.firebaseio.com/posts.json",
+    postData,
+    {
+      observe: 'response'
+    }
+  )
+```
+observe values:
+ - response - u can access th headers, status, statusText, body etc.
+ - body - regular response body
+ - events - event types 
+ ```ts
+this.http
+  .delete("https://angular-98a53.firebaseio.com/posts.json", {
+    observe: "events"
+  })
+  .pipe(
+    tap(event => {
+      console.log(event);
+      if (event.type === HttpEventType.Response) {
+        console.log(event.body);
+      }
+    })
+  );
+```
+
+### Response type:
+By providing the type of response angular will transform in type u set.
+```ts
+.delete("https://angular-98a53.firebaseio.com/posts.json", {
+    observe: "events",
+    responseType: 'json' //text, blob, etc.
+  })
+```
+
+### Interceptors:
+Registering Interceptor in app module:
+```ts
+providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptorService,
+      multi: true
+    }
+]
+```
+Interceptor Service:
+```ts
+export class AuthInterceptorService implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next: HttpHandler) {
+    if (req.url === "do not make request") {
+      //...
+    }
+
+    const modifiedRequest = req.clone({
+      url: "some-new-url",
+      headers: req.headers.append('Auth', 'xxx')
+    });
+
+    return next.handle(modifiedRequest);
+  }
+}
+```
+#### Detetcting Response/Request interceptors:
+```ts
+return next.handle(modifiedRequest).pipe(
+      tap(event => {
+        if (event.type === HttpEventType.Response) {
+          console.log("Response arrived, body - ", event.body);
+        }
+      })
+    );
+```
+#### Multiple interceptors
+The order of interceptors is important, cause it's the order they will be executed:
+```ts
+providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptorService,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: LogginInterceptorService,
+      multi: true
+    }
+]
+```
 
 ## Authentication
 
@@ -1656,7 +1917,7 @@ export class CustomValidators {
 
 ### Adding model
 
-```
+```typescript
 export class Recipe {
   public name: string;
   public description: string;
@@ -1673,7 +1934,7 @@ export class Recipe {
 
 Shortcut:
 
-```
+```typescript
 export class Recipe {
 
   constructor(public name: string, public desc: string, public imagePath: string) {}
