@@ -1906,6 +1906,314 @@ providers: [
 ```
 
 ## Authentication
+Auth service:
+```ts
+import { Injectable } from "@angular/core";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { catchError, tap } from "rxjs/operators";
+import { throwError, BehaviorSubject } from "rxjs";
+import { User } from "./user.model";
+import { Router } from "@angular/router";
+
+export interface AuthResponseData {
+  idToken: string;
+  email: string;
+  refreshToken: string;
+  expiresIn: string;
+  localId: string;
+  registered?: boolean;
+}
+
+@Injectable({ providedIn: "root" })
+export class AuthService {
+  user = new BehaviorSubject<User>(null);
+  private tokenExpirationTimer: any;
+
+  constructor(private http: HttpClient, private router: Router) {}
+
+  signup(email: string, password: string) {
+    return this.http
+      .post<AuthResponseData>(
+        "https://...",
+        {
+          email,
+          password,
+          returnSecureToken: true
+        }
+      )
+      .pipe(
+        catchError(this.handleError),
+        tap(responseData => {
+          this.handleAuthentication(
+            responseData.email,
+            responseData.localId,
+            responseData.idToken,
+            +responseData.expiresIn
+          );
+        })
+      );
+  }
+
+  singin(email: string, password: string) {
+    return this.http
+      .post<AuthResponseData>(
+        "https://...",
+        {
+          email,
+          password,
+          returnSecureToken: true
+        }
+      )
+      .pipe(
+        catchError(this.handleError),
+        tap(responseData => {
+          this.handleAuthentication(
+            responseData.email,
+            responseData.localId,
+            responseData.idToken,
+            +responseData.expiresIn
+          );
+        })
+      );
+  }
+
+  autoLogin() {
+    const userData: {
+      email: string;
+      id: string;
+      _token: string;
+      _tokenExpirationDate: Date;
+    } = JSON.parse(localStorage.getItem("userData"));
+
+    if (!userData) return;
+
+    const loadedUser = new User(
+      userData.email,
+      userData.id,
+      userData._token,
+      new Date(userData._tokenExpirationDate)
+    );
+
+    if (loadedUser.token) {
+      this.user.next(loadedUser);
+      const expirationDuration =
+        new Date(userData._tokenExpirationDate).getTime() -
+        new Date().getTime();
+      this.autoLogout(expirationDuration);
+    }
+  }
+
+  logout() {
+    this.user.next(null);
+    localStorage.removeItem("userData");
+    this.router.navigate(["/auth"]);
+
+    if (this.tokenExpirationTimer) {
+      clearTimeout(this.tokenExpirationTimer);
+    }
+  }
+
+  autoLogout(expirationDuration: number) {
+    this.tokenExpirationTimer = setTimeout(() => {
+      this.logout();
+    }, expirationDuration);
+  }
+
+  private handleAuthentication(
+    email: string,
+    userId: string,
+    token: string,
+    expiresIn: number
+  ) {
+    const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
+    const user = new User(email, userId, token, expirationDate);
+
+    this.user.next(user);
+    this.autoLogout(expiresIn * 1000);
+    localStorage.setItem("userData", JSON.stringify(user));
+  }
+
+  private handleError(errorRes: HttpErrorResponse) {
+    let errorMessage = "Some Error Occured";
+
+    if (!errorRes.error || !errorRes.error.error) {
+      return throwError(errorMessage);
+    }
+
+    switch (errorRes.error.error.message) {
+      case "EMAIL_EXISTS":
+        errorMessage = "User w/ such email already exists";
+        break;
+      case "EMAIL_NOT_FOUND":
+        errorMessage = "User w/ such email doesn't exist";
+        break;
+      case "INVALID_PASSWORD":
+        errorMessage = "Invalid password";
+        break;
+    }
+
+    return throwError(errorMessage);
+  }
+}
+
+```
+
+To check if user was logged in whe app is loaded:
+```ts
+ngOnInit() {
+    this.authService.autoLogin();
+}
+```
+
+Submit function:
+```ts
+onSubmit() {
+    const email = this.authForm.value.email;
+    const password = this.authForm.value.password;
+
+    let authObs: Observable<AuthResponseData>;
+
+    this.isLoading = true;
+    if (this.isLoginMode) {
+      authObs = this.authService.singin(email, password);
+    } else {
+      authObs = this.authService.signup(email, password);
+    }
+
+    authObs.subscribe(
+      resData => {
+        console.log(resData);
+        this.isLoading = false;
+        this.router.navigate(["/recipes"]);
+      },
+      errorMessage => {
+        this.isLoading = false;
+        this.error = errorMessage;
+      }
+    );
+
+    this.resetForm();
+  }
+```
+
+Interceptor:
+```ts
+import { Injectable } from "@angular/core";
+import {
+  HttpInterceptor,
+  HttpRequest,
+  HttpHandler,
+  HttpParams
+} from "@angular/common/http";
+import { AuthService } from "./auth.service";
+import { take, exhaustMap } from "rxjs/operators";
+
+@Injectable({ providedIn: "root" })
+export class AuthInterceptorService implements HttpInterceptor {
+  constructor(private authService: AuthService) {}
+
+  intercept(req: HttpRequest<any>, next: HttpHandler) {
+    return this.authService.user.pipe(
+      take(1),
+      exhaustMap(user => {
+        if (!user) return next.handle(req); // if no user - for signin/signup
+
+        const modifiedReq = req.clone({
+          params: new HttpParams().set("auth", user.token) // setting token from user for every request
+        });
+
+        return next.handle(modifiedReq);
+      })
+    );
+  }
+}
+```
+
+Auth guard:
+```ts
+import { Injectable } from "@angular/core";
+import {
+  CanActivate,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+  Router,
+  UrlTree
+} from "@angular/router";
+import { Observable } from "rxjs";
+import { AuthService } from "./auth.service";
+import { map, tap, take } from "rxjs/operators";
+
+@Injectable({ providedIn: "root" })
+export class AuthGuardService implements CanActivate {
+  constructor(private authService: AuthService, private router: Router) {}
+
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ):
+    | Observable<boolean | UrlTree>
+    | Promise<boolean | UrlTree>
+    | boolean
+    | UrlTree {
+    return this.authService.user.pipe(
+      take(1),
+      map(user => {
+        // return !!user;
+        const isAuth = !!user;
+
+        return isAuth ? true : this.router.createUrlTree(["/auth"]);
+      })
+      // 1st approach
+      //   tap(isAuth => {
+      //     if (!isAuth) {
+      //       this.router.navigate(["/auth"]);
+      //     }
+      //   })
+    );
+  }
+}
+```
+
+*Note: do not forget to register Guard and Interceptor!*
+
+## Dynamic Components
+Means u want to display component dynamically and are controlled programmatically, for example by ngIf.
+
+Another approach which is already not supported is Dynamic Component Loader. Component created and added to DOM via code. 
+
+### Programmatic Creation
+To create component:
+1. Inject ComponentFactoryResolver instance:
+```ts
+constructor(private componentFactoryResolver: ComponentFactoryResolver){}
+```
+2. Create component factory:
+```ts
+const alertCmpFactory = this.componentFactoryResolver.resolveComponentFactory(AlertComponent)
+```
+3. Add place in template with a ref:
+```ts
+<ng-template appPlaceholder></ng-template>
+```
+appPlaceholder directive:
+```ts
+import { Directive, ViewContainerRef } from "@angular/core";
+
+@Directive({ selector: "[appPlaceHoder]" })
+export class PlaceholderDirective {
+  constructor(public viewContainerRef: ViewContainerRef) {}
+}
+```
+4. Create ref on the place in the DOM to insert to:
+```ts
+const alertCmpFactory = this.componentFactoryResolver.resolveComponentFactory(
+      AlertComponent
+    );
+const hostViewContainerRef = this.alertHost.viewContainerRef; // ref
+hostViewContainerRef.clear(); // clear everything was rendered there
+
+hostViewContainerRef.createComponent(alertCmpFactory); // create component
+```
 
 ## Optimization & NgModules
 
