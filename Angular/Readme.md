@@ -2214,12 +2214,131 @@ hostViewContainerRef.clear(); // clear everything was rendered there
 
 hostViewContainerRef.createComponent(alertCmpFactory); // create component
 ```
+5. If u want to craete component in code, u instead have to inform Angular to be prepared for creation by providing **entryComponents**:
+app.modules.ts
+```ts
+entryComponents: [AlertComponent]
+```
+6. Set dynamic component props on component ref instance:
+```ts
+alertCmpRef.instance.message = message; // setting message
+    this.closeSub = alertCmpRef.instance.close.subscribe(() => { // subscribe on EventEmitter
+      this.closeSub.unsubscribe();
+      hostViewContainerRef.clear();
+});
+```
 
 ## Optimization & NgModules
+**Modules** - array of bundling blocks together(component, directives, services, pipes).
+App requires at least one module - app.
+Core Angular feeatures are included in Angular modules(e.g. FormsModule, HttpClientModule).
+
+*Bootstrap* array is important fo starting your app. It defines which component is available right in that index.html.
+Typically, it's one component, but it's possible to provide many.
+
+### Defining a module:
+1. Add NgModule Decorator w/ all components declaration are used in this module.
+Also, do not forget to export all the declarations:
+```ts
+@NgModule({
+  declarations: [
+      ...
+  ],
+  exports: [
+      ...
+  ]
+})
+```
+2.Add all features imports that are used in this module:
+```ts
+imports: [RouterModule, CommonModule, ReactiveFormsModule]
+```
+3.Add this module to imports in app.module.ts
+
+It is good to create child routing module for module as well, using forChild and import it in module that is using this routes:
+```ts
+routes = []
+
+NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+});
+```
+
+### Shared modules:
+Directives, pipes, services etc. could be declared only once.
+So, if u are using them(shared module) in different modules, do not declare them twice, declare them in shared module.
+
+### Lazy Loading
+In order not to load the whole app, load only the route is being visited now.
+Could be implemented with loadChildren: '[path_to_module]#[name_of_module]'
+```ts
+{
+	path: '',
+    loadChildren: './some.module#SomeModule'
+}
+```
+Alternative:
+```ts
+loadChildren: () => import('./your-module-path/module-name.module').then(m => m.ModuleName)
+```
+Please note, that you need to ensure that in your tsconfig.json file, you use
+```ts
+"module": "esnext",
+```
+instead of
+```ts
+"module": "es2015",
+```
+
+*Note: if u are using lazy loading there is no need in importing these modules to main module.*
+
 
 ## Deployment
+### Compilation
+- Just-in-Time (JiT) Compilation. Angular template compiler runs in browser(at runtime).
+- Ahead-of-Time(AoT) Compilation. Angular template compiler runs during the build process(before the app is deployed, not in the browser).
+
+Production build: 
+```
+ng build --prod
+```
+After running u gor dist folder
+
+### ENV variables
+Depending on which env u are using, Angular will adopt to it. So, it u are making a production build, it will swap env files(environment.prod.ts, environment.ts) and use environment.prod.ts, environment.ts is used for local developping.
+*environment.ts*
+```ts
+export const environment = {
+  production: false,
+  firebaseAPIKey: 'firebaseAPIKey'
+};
+```
+*usage:*
+```ts
+import { environment } from '../environments/environment' // will be swapped automatically for production
+// somewhere in code
+environment.firebaseAPIKey
+```
 
 ## Animations & Testing
+
+## Angular Universal(SSR)
+App is prerendered on the server. And then it's executed in browser.
+Good for SEO, cause everything u c on the front side of Angular is <app-root></app-root>
+
+## Universal rendering
+### Using NestJs
+1. Run 
+```
+ng add @nestjs/ng-universal 
+```
+2. Enter Project name
+New files will be generated for server side rendering.
+3. Run 
+```
+npm run build:ssr
+```
 
 ## Other
 
