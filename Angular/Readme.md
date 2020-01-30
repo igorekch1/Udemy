@@ -2300,7 +2300,7 @@ instead of
 - Ahead-of-Time(AoT) Compilation. Angular template compiler runs during the build process(before the app is deployed, not in the browser).
 
 Production build: 
-```
+```bash
 ng build --prod
 ```
 After running u gor dist folder
@@ -2330,18 +2330,130 @@ Good for SEO, cause everything u c on the front side of Angular is <app-root></a
 ## Universal rendering
 ### Using NestJs
 1. Run 
-```
+```bash
 ng add @nestjs/ng-universal 
 ```
 2. Enter Project name
 New files will be generated for server side rendering.
 3. Run 
-```
+```bash
 npm run build:ssr
 ```
 
-## Other
+## State Management
+### RxJs 
+Issues:
+- state can be updated anywhere
+- State is(possibly) mutable
+- Handling side effects is unclear
 
+### Redux
+- Component dispatches actions
+- Action is sent to reducer
+- Reducer saves reduced State(immutably)
+
+### NgRx 
+#### Difference w/ **Redux**:
+- Deeply integrated into Angular
+- Uses RxJS
+- Uses TypeScript
+- Actions listen to side effects(e.g. http) and then sends a new action
+
+#### Setup
+Installation:
+```bash
+npm i @ngrx/store
+```
+
+**Action:**
+```ts
+import { Action } from "@ngrx/store";
+import { Ingredient } from "src/app/shared/ingredient.model";
+
+export const ADD_INGREDIENT = "ADD_INGREDIENT";
+
+export class AddIngredient implements Action {
+  readonly type = ADD_INGREDIENT;
+
+  constructor(public payload: Ingredient) {}
+}
+```
+Each action can be presetnted as a class, that has two fields:
+- type (readonly)
+- payload
+
+#### Reducer
+```ts
+import { Ingredient } from "../../shared/ingredient.model";
+import * as ShoppingListActions from "./shopping-list.actions";
+
+const initialState = {
+  ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)]
+};
+
+export function shoppingListReducer(
+  state = initialState,
+  action: ShoppingListActions.AddIngredient
+) {
+  switch (action.type) {
+    case ShoppingListActions.ADD_INGREDIENT:
+      return {
+        ...state,
+        ingredients: [...state.ingredients, action.payload]
+      };
+    default:
+      return state;
+  }
+}
+```
+#### Store
+Add StoreModule, which is imported from "@ngrx/store" and provide reducers there:
+```ts
+@NgModule({
+  declarations: [AppComponent],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    AppRoutingModule,
+    StoreModule.forRoot({
+      shoppingList: shoppingListReducer
+    })
+  ],
+  bootstrap: [AppComponent]
+})
+```
+**Using store:**
+Inject store in component/service, where u want to use it:
+```ts
+private store: Store<{shoppingList: {ingredients: Ingredient[]}}>
+```
+Store has a generic type. In this case , it's a combination of all reducers.
+Reducer has a type of what it yields(what it has in state), so it's an array of Ingredients.
+
+*Selecting smthing from state:*
+```ts
+ingredients: Observable<{ ingredients: Ingredient[] }>;
+
+this.ingredients = this.store.select("shoppingList"); // Observable 
+```
+In the tamplate ad async directive to wait for resolving:
+```html
+*ngFor="let ingredient of ingredients | async; let i = index"
+```
+#### Dispatch an action
+```ts
+this.store.dispatch(new ShoppingListActions.AddIngredient(newIngredient));
+```
+
+#### Multiple Actions
+To provide correct type of Action, create type of all Actions:
+```ts
+export type Actions = AddIngredient | AddIngredients;
+```
+
+
+
+## Other
 ### Adding model
 
 ```typescript
