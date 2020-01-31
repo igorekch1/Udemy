@@ -2451,6 +2451,43 @@ To provide correct type of Action, create type of all Actions:
 export type Actions = AddIngredient | AddIngredients;
 ```
 
+#### Expanding the state
+Define an interface for each reducer state.
+To combine all reducer define an interface for all reducers that have their own interface 
+```ts
+export interface AppState {
+  shoppingList: ShoppingListState;
+}
+
+export interface ShoppingListState {
+  ingredients: Ingredient[];
+  editedIngredient: Ingredient;
+  editedIngredientIndex: number;
+}
+
+const initialState: ShoppingListState = {
+  ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)],
+  editedIngredient: null,
+  editedIngredientIndex: -1
+};
+```
+Now, your store has an interface of whole app:
+```ts
+private store: Store<fromShoppingList.AppState>
+```
+
+#### Manage component state depending on ngrx store:
+```ts
+ngOnInit() {
+    this.store.select("shoppingList").subscribe(stateData => {
+      if (some_codition) {
+      	///some logic --> assigning component state fields
+      } else {
+          // some logic
+      }
+    });
+  }
+```
 
 
 ## Other
