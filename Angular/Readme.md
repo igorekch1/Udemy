@@ -2489,6 +2489,110 @@ ngOnInit() {
   }
 ```
 
+#### One root State
+Combine all reducers:
+```ts
+import * as fromShoppingList from "../shopping-list/store/shopping-list.reducer";
+import * as fromAuth from "../auth/store/auth.reducer";
+import { ActionReducerMap } from "@ngrx/store";
+
+export interface AppState {
+  shoppingList: fromShoppingList.ShoppingListState;
+  auth: fromAuth.UserState;
+}
+
+export const appReducer: ActionReducerMap<AppState> = {
+  shoppingList: fromShoppingList.shoppingListReducer,
+  auth: fromAuth.authReducer
+};
+```
+app.module.ts:
+```ts
+StoreModule.forRoot(fromApp.appReducer)
+```
+
+#### Using store properties:
+```ts
+this.store.select('auth').map(authState => authState.user)
+```
+
+#### Action prefixing:
+Prefix - []
+```ts
+export const ADD_INGREDIENT = "[Shopping List] ADD_INGREDIENT";
+export const UPDATE_INGREDIENT = "[Shopping List] UPDATE_INGREDIENT";
+```
+
+#### Side Effects
+```bash
+npm i @ngrx/effects
+```
+Effect action:
+```ts
+import {Actions, ofType, Effect} from "@ngrx/effects";
+
+import * as AuthActions from "./auth.actions";
+
+@Injectable()
+export class AuthEffects {
+    @Effect()
+    authLogin = this.actions$.pipe(
+		ofType(AuthActions.LOGIN_START), // Listen to an action
+        switchMap((authData: AuthActions.LoginStart) => { // in order to return a new Observable
+			return this.http.post(...)
+                   .pipe(catchError(error => {
+						// ...
+                        of(); // return new Observable
+                        }), map(resData => {
+							of();
+        				}))
+		})
+    );
+    
+    constructor(private actions$: Actions) {}
+}
+
+```
+U have to register effects:
+```ts
+EffectsModule.forRoot([AuthEffects])
+```
+If effect doesn't dispatch an action u have to pass an object to the decorator:
+```ts
+@Effect({
+	dispatch: false
+})
+```
+
+**U can react to multiple actions:**
+```ts
+ofType(AuthActions.LOGIN_START, AuthAction.ANOTHHER_ACTION)
+```
+
+#### Ngrx devtools
+```bash
+npm i --save-dev @ngrx/store-devtools
+```
+
+```ts
+import { StoreDevtoolsModule } from "@ngrx/store-devtools";
+```
+Add to imports:
+```ts
+StoreDevtoolsModule.instrument({ logOnly: environment.production })
+```
+
+To watch router navigation actions through the app add @ngrx/router-store: 
+```bash
+npm i --save-dev @ngrx/router-store
+```
+```ts
+import { StoreRouterConnectingModule } from "@ngrx/router-store";
+```
+Add to imports:
+```ts
+StoreRouterConnectingModule.forRoot()
+```
 
 ## Other
 ### Adding model
